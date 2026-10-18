@@ -123,6 +123,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#cdk-sfn-flow.FlowWorkflow.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#cdk-sfn-flow.FlowWorkflow.property.alarms">alarms</a></code> | <code>aws-cdk-lib.aws_cloudwatch.Alarm[]</code> | The generated CloudWatch alarms. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflow.property.role">role</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | The execution role of the state machine. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflow.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.StateMachine</code> | The generated state machine. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflow.property.workflowName">workflowName</a></code> | <code>string</code> | The workflow name used for payload keys (`flow/<workflowName>/...`). |
@@ -141,6 +142,18 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
+
+---
+
+##### `alarms`<sup>Required</sup> <a name="alarms" id="cdk-sfn-flow.FlowWorkflow.property.alarms"></a>
+
+```typescript
+public readonly alarms: Alarm[];
+```
+
+- *Type:* aws-cdk-lib.aws_cloudwatch.Alarm[]
+
+The generated CloudWatch alarms.
 
 ---
 
@@ -218,6 +231,98 @@ The payload bucket, if the workflow uses one (S3/AUTO payloads or Distributed Ma
 
 
 ## Structs <a name="Structs" id="Structs"></a>
+
+### AlarmsConfig <a name="AlarmsConfig" id="cdk-sfn-flow.AlarmsConfig"></a>
+
+CloudWatch alarms on the state machine's execution metrics.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.AlarmsConfig.Initializer"></a>
+
+```typescript
+import { AlarmsConfig } from 'cdk-sfn-flow'
+
+const alarmsConfig: AlarmsConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.AlarmsConfig.property.failed">failed</a></code> | <code>boolean</code> | Alarm on `ExecutionsFailed`. |
+| <code><a href="#cdk-sfn-flow.AlarmsConfig.property.period">period</a></code> | <code>aws-cdk-lib.Duration</code> | Metric period. |
+| <code><a href="#cdk-sfn-flow.AlarmsConfig.property.throttled">throttled</a></code> | <code>boolean</code> | Alarm on `ExecutionThrottled`. |
+| <code><a href="#cdk-sfn-flow.AlarmsConfig.property.timedOut">timedOut</a></code> | <code>boolean</code> | Alarm on `ExecutionsTimedOut`. |
+| <code><a href="#cdk-sfn-flow.AlarmsConfig.property.topic">topic</a></code> | <code>aws-cdk-lib.aws_sns.ITopic</code> | Topic notified when an alarm fires. |
+
+---
+
+##### `failed`<sup>Optional</sup> <a name="failed" id="cdk-sfn-flow.AlarmsConfig.property.failed"></a>
+
+```typescript
+public readonly failed: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Alarm on `ExecutionsFailed`.
+
+---
+
+##### `period`<sup>Optional</sup> <a name="period" id="cdk-sfn-flow.AlarmsConfig.property.period"></a>
+
+```typescript
+public readonly period: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
+- *Default:* Duration.minutes(5)
+
+Metric period.
+
+---
+
+##### `throttled`<sup>Optional</sup> <a name="throttled" id="cdk-sfn-flow.AlarmsConfig.property.throttled"></a>
+
+```typescript
+public readonly throttled: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Alarm on `ExecutionThrottled`.
+
+---
+
+##### `timedOut`<sup>Optional</sup> <a name="timedOut" id="cdk-sfn-flow.AlarmsConfig.property.timedOut"></a>
+
+```typescript
+public readonly timedOut: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Alarm on `ExecutionsTimedOut`.
+
+---
+
+##### `topic`<sup>Optional</sup> <a name="topic" id="cdk-sfn-flow.AlarmsConfig.property.topic"></a>
+
+```typescript
+public readonly topic: ITopic;
+```
+
+- *Type:* aws-cdk-lib.aws_sns.ITopic
+- *Default:* no notifications
+
+Topic notified when an alarm fires.
+
+Without `defaults.catchErrors`, it also
+receives a message from a generated catch-all before the execution fails.
+
+---
 
 ### CatchConfig <a name="CatchConfig" id="cdk-sfn-flow.CatchConfig"></a>
 
@@ -815,7 +920,9 @@ const flowWorkflowProps: FlowWorkflowProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.steps">steps</a></code> | <code><a href="#cdk-sfn-flow.Step">Step</a>[]</code> | The steps, run in array order unless `next` says otherwise. |
+| <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.alarms">alarms</a></code> | <code><a href="#cdk-sfn-flow.AlarmsConfig">AlarmsConfig</a></code> | CloudWatch alarms, and an SNS topic for alarm actions and the generated global catch. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.defaults">defaults</a></code> | <code><a href="#cdk-sfn-flow.DefaultsConfig">DefaultsConfig</a></code> | Retry, catch and timeout defaults for `task`, `parallel`, `map` and `subflow` steps. |
+| <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.encryptionKey">encryptionKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | Customer managed key for the state machine's data at rest. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.logging">logging</a></code> | <code><a href="#cdk-sfn-flow.LoggingConfig">LoggingConfig</a></code> | Execution logging. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.name">name</a></code> | <code>string</code> | The state machine name. |
 | <code><a href="#cdk-sfn-flow.FlowWorkflowProps.property.payload">payload</a></code> | <code><a href="#cdk-sfn-flow.PayloadConfig">PayloadConfig</a></code> | Large-payload handling (inline, or S3 claim check for Lambda outputs). |
@@ -837,6 +944,19 @@ The steps, run in array order unless `next` says otherwise.
 
 ---
 
+##### `alarms`<sup>Optional</sup> <a name="alarms" id="cdk-sfn-flow.FlowWorkflowProps.property.alarms"></a>
+
+```typescript
+public readonly alarms: AlarmsConfig;
+```
+
+- *Type:* <a href="#cdk-sfn-flow.AlarmsConfig">AlarmsConfig</a>
+- *Default:* no alarms
+
+CloudWatch alarms, and an SNS topic for alarm actions and the generated global catch.
+
+---
+
 ##### `defaults`<sup>Optional</sup> <a name="defaults" id="cdk-sfn-flow.FlowWorkflowProps.property.defaults"></a>
 
 ```typescript
@@ -847,6 +967,19 @@ public readonly defaults: DefaultsConfig;
 - *Default:* built-in retry, no catch, no timeout
 
 Retry, catch and timeout defaults for `task`, `parallel`, `map` and `subflow` steps.
+
+---
+
+##### `encryptionKey`<sup>Optional</sup> <a name="encryptionKey" id="cdk-sfn-flow.FlowWorkflowProps.property.encryptionKey"></a>
+
+```typescript
+public readonly encryptionKey: IKey;
+```
+
+- *Type:* aws-cdk-lib.aws_kms.IKey
+- *Default:* AWS owned key
+
+Customer managed key for the state machine's data at rest.
 
 ---
 

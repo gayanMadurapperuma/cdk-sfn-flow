@@ -1,5 +1,7 @@
 import { Annotations, Duration, Names } from "aws-cdk-lib";
+import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as kms from "aws-cdk-lib/aws-kms";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
@@ -11,7 +13,15 @@ import {
 } from "./compiler/payload-wiring";
 import { FlowResolver } from "./compiler/resolver";
 import { validateWorkflow } from "./compiler/validator";
-import { configureLogging, LoggingConfig } from "./observability";
+import {
+  AlarmsConfig,
+  configureLogging,
+  createAlarms,
+  createGlobalCatch,
+  GLOBAL_CATCH_FAIL,
+  GLOBAL_CATCH_NOTIFY,
+  LoggingConfig,
+} from "./observability";
 import { Step } from "./steps/step";
 import { DefaultsConfig, WorkflowType } from "./types";
 
@@ -70,6 +80,20 @@ export interface FlowWorkflowProps {
    * @default true
    */
   readonly tracing?: boolean;
+
+  /**
+   * Customer managed key for the state machine's data at rest.
+   *
+   * @default - AWS owned key
+   */
+  readonly encryptionKey?: kms.IKey;
+
+  /**
+   * CloudWatch alarms, and an SNS topic for alarm actions and the generated global catch.
+   *
+   * @default - no alarms
+   */
+  readonly alarms?: AlarmsConfig;
 }
 
 /**
@@ -87,6 +111,9 @@ export class FlowWorkflow extends Construct {
 
   /** The workflow type. */
   public readonly workflowType: WorkflowType;
+
+  /** The generated CloudWatch alarms. */
+  public readonly alarms: cloudwatch.Alarm[];
 
   /** The workflow name used for payload keys (`flow/<workflowName>/...`). */
   public readonly workflowName: string;
@@ -112,15 +139,20 @@ export class FlowWorkflow extends Construct {
       props.payload ?? {},
     );
 
-    const resolver = new FlowResolver(new Construct(this, "States"), {
+    const states = new Construct(this, "States");
+    const topLevelCatches =
+      defaults.catchErrors ??
+      (props.alarms?.topic ? [{ next: GLOBAL_CATCH_NOTIFY }] : undefined);
+    const resolver = new FlowResolver(states, {
       workflowType: this.workflowType,
       defaults,
       payload: this.payloadStore,
-      topLevelCatches: defaults.catchErrors,
+      topLevelCatches,
     });
 
     const result = validateWorkflow(props.steps ?? [], {
       context: resolver.context,
+      reservedIds: [GLOBAL_CATCH_NOTIFY, GLOBAL_CATCH_FAIL],
       topLevelCatchTargets: (defaults.catchErrors ?? []).map((c, i) => ({
         target: c.next,
         field: `defaults.catchErrors[${i}].next`,
@@ -144,6 +176,12 @@ export class FlowWorkflow extends Construct {
       );
     }
 
+    if (defaults.catchErrors === undefined && props.alarms?.topic) {
+      resolver.addTarget(
+        GLOBAL_CATCH_NOTIFY,
+        createGlobalCatch(states, props.alarms.topic, this.workflowName),
+      );
+    }
     const definition = resolver.build(props.steps);
     const logging = configureLogging(this, props.logging ?? {}, props.name);
     this.logGroup = logging.logGroup;
@@ -159,8 +197,14 @@ export class FlowWorkflow extends Construct {
       timeout: props.timeout,
       tracingEnabled: props.tracing ?? true,
       logs: logging.logOptions,
+      encryptionConfiguration: props.encryptionKey
+        ? new sfn.CustomerManagedEncryptionConfiguration(props.encryptionKey)
+        : undefined,
     });
     this.role = this.stateMachine.role;
+    this.alarms = props.alarms
+      ? createAlarms(this, this.stateMachine, props.alarms)
+      : [];
   }
 
   /** The payload bucket, if the workflow uses one (S3/AUTO payloads or Distributed Map results). */

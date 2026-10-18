@@ -15,7 +15,9 @@ describe("PayloadStore", () => {
     expect(store.retentionDays).toBe(7);
     expect(store.prefix).toBe("flow/orders");
     expect(store.existingBucket).toBeUndefined();
-    expect(stack.node.findAll().some((c) => c instanceof s3.Bucket)).toBe(false);
+    expect(stack.node.findAll().some((c) => c instanceof s3.Bucket)).toBe(
+      false,
+    );
   });
 
   test("creates an encrypted, private, SSL-only bucket with lifecycle expiry", () => {

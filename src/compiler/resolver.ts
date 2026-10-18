@@ -17,8 +17,6 @@ export interface FlowResolverOptions {
    * (`defaults.catchErrors`, or the generated global catch).
    */
   readonly topLevelCatches?: CatchConfig[];
-  /** Generated top-level states that catches can target, by name. */
-  readonly extraTargets?: { [id: string]: sfn.State };
 }
 
 /**
@@ -27,6 +25,7 @@ export interface FlowResolverOptions {
  */
 export class FlowResolver {
   public readonly context: FlowWorkflowContext;
+  private readonly extraTargets = new Map<string, sfn.State>();
 
   constructor(
     private readonly scope: Construct,
@@ -38,6 +37,11 @@ export class FlowResolver {
       payload: options.payload,
       buildSteps: (steps) => this.buildList(steps, false),
     };
+  }
+
+  /** Registers a generated top-level state that catches can target. */
+  public addTarget(id: string, state: sfn.State): void {
+    this.extraTargets.set(id, state);
   }
 
   /** Builds the top-level step list. */
@@ -56,7 +60,7 @@ export class FlowResolver {
     const resolve = (target: string): sfn.State => {
       const state =
         built.get(target)?.start ??
-        (top ? this.options.extraTargets?.[target] : undefined);
+        (top ? this.extraTargets.get(target) : undefined);
       if (!state) {
         // The validator rejects unknown targets; this guards internal misuse.
         throw new Error(`cdk-sfn-flow: unknown step '${target}'`);

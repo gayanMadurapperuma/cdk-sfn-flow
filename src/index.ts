@@ -7,7 +7,7 @@ export {
   StepBaseProps,
   WorkflowType,
 } from "./types";
-export { LoggingConfig } from "./observability";
+export { AlarmsConfig, LoggingConfig } from "./observability";
 export { Invoke } from "./invoke/invoke";
 export {
   EcsRunTaskInvokeProps,
