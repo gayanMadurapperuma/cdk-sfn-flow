@@ -7,9 +7,11 @@ import { TaskPattern } from "../invoke/task-pattern";
 import { readsStateInput } from "../jsonata";
 import type { ChoiceBuilder } from "../steps/choice";
 import type { MapBuilder } from "../steps/map";
+import type { PassBuilder } from "../steps/pass";
 import type { Step } from "../steps/step";
 import { StepType } from "../steps/step-type";
 import type { TaskBuilder } from "../steps/task";
+import type { WaitBuilder } from "../steps/wait";
 
 /** The Lambda function of a request-response Lambda task, whose output the runtime may offload. */
 function offloadingLambda(step: Step): lambda.IFunction | undefined {
@@ -113,6 +115,42 @@ function mayBeOffloaded(step: Step): boolean {
   return false;
 }
 
+/** True for steps that pass their input through unchanged (spec: wait, pass and choice keep refs). */
+function passesThrough(step: Step): boolean {
+  switch (step.type) {
+    case StepType.CHOICE:
+      return (step._builder as ChoiceBuilder).props.output === undefined;
+    case StepType.WAIT:
+      return (step._builder as WaitBuilder).props.output === undefined;
+    case StepType.PASS:
+      return (step._builder as PassBuilder).props.output === undefined;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Steps whose possibly offloaded output reaches `id`, looking through
+ * pass-through steps (choice, wait, pass without output).
+ */
+function offloadingSources(
+  id: string,
+  preds: Map<string, Step[]>,
+  seen = new Set<string>(),
+): Step[] {
+  const sources: Step[] = [];
+  for (const pred of preds.get(id) ?? []) {
+    if (seen.has(pred.id)) continue;
+    seen.add(pred.id);
+    if (mayBeOffloaded(pred)) {
+      sources.push(pred);
+    } else if (passesThrough(pred)) {
+      sources.push(...offloadingSources(pred.id, preds, seen));
+    }
+  }
+  return sources;
+}
+
 /**
  * Warnings for states that read data a previous Lambda may have offloaded to S3 (spec 5.5).
  */
@@ -126,7 +164,7 @@ export function analyzePayload(
   for (const scope of allScopes(steps)) {
     const preds = dataPredecessors(scope.steps);
     for (const step of scope.steps) {
-      const offloaders = (preds.get(step.id) ?? []).filter(mayBeOffloaded);
+      const offloaders = offloadingSources(step.id, preds);
       if (offloaders.length === 0) continue;
       const kept = new Set(offloaders.flatMap((p) => [...keptFields(p)]));
       const uncovered = (expression: string | undefined): string[] =>

@@ -43,7 +43,7 @@ export class WaitBuilder implements StepBuilder {
   public readonly terminal = false;
   public readonly next?: string;
 
-  constructor(private readonly props: WaitStepProps) {
+  constructor(public readonly props: WaitStepProps) {
     this.next = props.next;
   }
 

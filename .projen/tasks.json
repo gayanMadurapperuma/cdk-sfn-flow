@@ -366,6 +366,31 @@
         },
         {
           "spawn": "build:runtime"
+        },
+        {
+          "spawn": "test:example"
+        }
+      ]
+    },
+    "test:example": {
+      "name": "test:example",
+      "description": "Pack the local builds into examples/order-flow, synth it and audit its dependencies",
+      "steps": [
+        {
+          "exec": "node scripts/pack-local.js",
+          "cwd": "examples/order-flow"
+        },
+        {
+          "exec": "npm install --no-audit --no-fund",
+          "cwd": "examples/order-flow"
+        },
+        {
+          "exec": "npm run synth",
+          "cwd": "examples/order-flow"
+        },
+        {
+          "exec": "node ../../build-tools/audit-check.js .",
+          "cwd": "examples/order-flow"
         }
       ]
     },

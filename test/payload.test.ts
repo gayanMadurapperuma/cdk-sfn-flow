@@ -257,6 +257,29 @@ describe("payload warnings", () => {
     ]);
   });
 
+  test("looks through choice, wait and pass steps", () => {
+    const { stack } = synth((s) => ({
+      payload: { strategy: PayloadStrategy.S3 },
+      steps: [
+        Step.task("Score", { invoke: Invoke.lambda(fn(s, "Fn")) }),
+        Step.wait("Pause", { seconds: 1 }),
+        Step.pass("Noop"),
+        Step.task("Notify", {
+          invoke: Invoke.sns(new sns.Topic(s, "T"), "{% $states.input.id %}"),
+        }),
+        Step.pass("Reshape", { output: "{% { 'id': 1 } %}" }),
+        Step.task("Notify2", {
+          invoke: Invoke.sns(new sns.Topic(s, "T2"), "{% $states.input.id %}"),
+        }),
+      ],
+    }));
+    expect(warningsFor(stack, "NonLambdaReadsOffloadedInput")).toEqual([
+      expect.stringContaining(
+        "Notify: Invoke.sns cannot resolve S3 references but reads $states.input after Score",
+      ),
+    ]);
+  });
+
   test("inline map over a possibly offloaded array", () => {
     const { stack } = synth((s) => ({
       payload: { strategy: PayloadStrategy.S3 },

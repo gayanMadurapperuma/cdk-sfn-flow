@@ -1,0 +1,760 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`README example synthesises 1`] = `
+{
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "Alerts91F83244": {
+      "Type": "AWS::SNS::Topic",
+    },
+    "Notify29C25B1B": {
+      "DependsOn": [
+        "NotifyServiceRoleDefaultPolicy29A5A742",
+        "NotifyServiceRole5B74FDA4",
+      ],
+      "Properties": {
+        "Code": {
+          "ZipFile": "exports.handler = async (e) => e;",
+        },
+        "Environment": {
+          "Variables": {
+            "FLOW_PAYLOAD_BUCKET": {
+              "Ref": "OrderFlowPayloadBucketD37B8B2B",
+            },
+            "FLOW_PAYLOAD_MODE": "auto",
+            "FLOW_PAYLOAD_PREFIX": "flow/TestStackOrderFlow6D17FD65",
+            "FLOW_PAYLOAD_THRESHOLD_KB": "200",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "NotifyServiceRole5B74FDA4",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "NotifyServiceRole5B74FDA4": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "NotifyServiceRoleDefaultPolicy29A5A742": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": [
+                        "OrderFlowPayloadBucketD37B8B2B",
+                        "Arn",
+                      ],
+                    },
+                    "/flow/TestStackOrderFlow6D17FD65/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "NotifyServiceRoleDefaultPolicy29A5A742",
+        "Roles": [
+          {
+            "Ref": "NotifyServiceRole5B74FDA4",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "OrderFlowFailedAlarm83551F4F": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "Alerts91F83244",
+          },
+        ],
+        "AlarmDescription": "Executions of TestStack/OrderFlow/StateMachine failed",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "StateMachineArn",
+            "Value": {
+              "Ref": "OrderFlowStateMachineF352CE90",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ExecutionsFailed",
+        "Namespace": "AWS/States",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "OrderFlowLogs42409B5C": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "RetentionInDays": 30,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "OrderFlowPayloadBucketD37B8B2B": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256",
+              },
+            },
+          ],
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": 7,
+              "Prefix": "flow/",
+              "Status": "Enabled",
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "OrderFlowPayloadBucketPolicyF70A2F96": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "OrderFlowPayloadBucketD37B8B2B",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "OrderFlowPayloadBucketD37B8B2B",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "OrderFlowPayloadBucketD37B8B2B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "OrderFlowStateMachineF352CE90": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "OrderFlowStateMachineRoleDefaultPolicyAF1D4E7E",
+        "OrderFlowStateMachineRoleA6E62FAB",
+      ],
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{"StartAt":"Validate","States":{"Validate":{"Next":"Enrich","Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"FlowNotifyFailure"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [\\"sku\\"] }, \\"data\\": $states.input } %}","Output":"{% $exists($states.result.\`$flowRef\`) ? $merge([$states.result.\`$keep\`, { \\"$flowRef\\": $states.result.\`$flowRef\` }]) : $states.result %}","Resource":"",
+              {
+                "Fn::GetAtt": [
+                  "Validate809E4227",
+                  "Arn",
+                ],
+              },
+              ""},"Enrich":{"Type":"Parallel","Next":"Route","Output":"{% { \\"pricing\\": $states.result[0], \\"stock\\": $states.result[1] } %}","Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"Failed"}],"Branches":[{"StartAt":"GetPrice","States":{"GetPrice":{"QueryLanguage":"JSONata","End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [\\"total\\"] }, \\"data\\": $states.input } %}","Output":"{% $exists($states.result.\`$flowRef\`) ? $merge([$states.result.\`$keep\`, { \\"$flowRef\\": $states.result.\`$flowRef\` }]) : $states.result %}","Resource":"",
+              {
+                "Fn::GetAtt": [
+                  "Price89D349F1",
+                  "Arn",
+                ],
+              },
+              ""}}},{"StartAt":"GetStock","States":{"GetStock":{"QueryLanguage":"JSONata","End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% $merge([{ \\"TableName\\": \\"",
+              {
+                "Ref": "Stock38709CBC",
+              },
+              "\\" }, ({ \\"Key\\": { \\"sku\\": { \\"S\\": $states.input.sku } } })]) %}","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::dynamodb:getItem"}}}]},"Route":{"Type":"Choice","Choices":[{"Condition":"{% $states.input.pricing.total > 1000 %}","Next":"Approval"}],"Default":"Ship"},"Ship":{"End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"FlowNotifyFailure"}],"Type":"Task","TimeoutSeconds":120,"Arguments":{"Entries":[{"Detail":"{% $states.input %}","DetailType":"OrderReady","Source":"orders"}]},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents"},"CoolOff":{"Type":"Wait","Seconds":300,"Next":"Ship"},"Approval":{"Next":"CoolOff","Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"FlowNotifyFailure"}],"Type":"Task","TimeoutSeconds":172800,"Arguments":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "Notify29C25B1B",
+                  "Arn",
+                ],
+              },
+              "","Payload":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [] }, \\"data\\": $merge([$states.input, { \\"taskToken\\": $states.context.Task.Token }]) } %}"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke.waitForTaskToken"},"FlowNotifyFailure":{"Next":"FlowFailed","Type":"Task","Arguments":{"TopicArn":"",
+              {
+                "Ref": "Alerts91F83244",
+              },
+              "","Message":"{% $string({ \\"workflow\\": \\"TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Id, \\"error\\": $states.input.Error, \\"cause\\": $states.input.Cause }) %}","Subject":"Workflow TestStackOrderFlow6D17FD65 failed"},"Output":"{% $states.input %}","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::sns:publish"},"FlowFailed":{"Type":"Fail","Error":"{% $states.input.Error %}","Cause":"{% $states.input.Cause %}"},"Failed":{"Type":"Fail","Error":"OrderFailed"}},"QueryLanguage":"JSONata"}",
+            ],
+          ],
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "OrderFlowLogs42409B5C",
+                    "Arn",
+                  ],
+                },
+              },
+            },
+          ],
+          "IncludeExecutionData": false,
+          "Level": "ERROR",
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "OrderFlowStateMachineRoleA6E62FAB",
+            "Arn",
+          ],
+        },
+        "StateMachineType": "STANDARD",
+        "TracingConfiguration": {
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "OrderFlowStateMachineRoleA6E62FAB": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "OrderFlowStateMachineRoleDefaultPolicyAF1D4E7E": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Validate809E4227",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "Validate809E4227",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":events:us-east-1:111111111111:event-bus/default",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Notify29C25B1B",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "Notify29C25B1B",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "sns:Publish",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "Alerts91F83244",
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Price89D349F1",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "Price89D349F1",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "dynamodb:GetItem",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "Stock38709CBC",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+                "xray:GetSamplingRules",
+                "xray:GetSamplingTargets",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "OrderFlowStateMachineRoleDefaultPolicyAF1D4E7E",
+        "Roles": [
+          {
+            "Ref": "OrderFlowStateMachineRoleA6E62FAB",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "OrderFlowTimedOutAlarmE20301D8": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "Alerts91F83244",
+          },
+        ],
+        "AlarmDescription": "Executions of TestStack/OrderFlow/StateMachine timed out",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "StateMachineArn",
+            "Value": {
+              "Ref": "OrderFlowStateMachineF352CE90",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ExecutionsTimedOut",
+        "Namespace": "AWS/States",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "Price89D349F1": {
+      "DependsOn": [
+        "PriceServiceRoleDefaultPolicyCBFAB809",
+        "PriceServiceRole1F3A47DE",
+      ],
+      "Properties": {
+        "Code": {
+          "ZipFile": "exports.handler = async (e) => e;",
+        },
+        "Environment": {
+          "Variables": {
+            "FLOW_PAYLOAD_BUCKET": {
+              "Ref": "OrderFlowPayloadBucketD37B8B2B",
+            },
+            "FLOW_PAYLOAD_MODE": "auto",
+            "FLOW_PAYLOAD_PREFIX": "flow/TestStackOrderFlow6D17FD65",
+            "FLOW_PAYLOAD_THRESHOLD_KB": "200",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "PriceServiceRole1F3A47DE",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "PriceServiceRole1F3A47DE": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "PriceServiceRoleDefaultPolicyCBFAB809": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": [
+                        "OrderFlowPayloadBucketD37B8B2B",
+                        "Arn",
+                      ],
+                    },
+                    "/flow/TestStackOrderFlow6D17FD65/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "PriceServiceRoleDefaultPolicyCBFAB809",
+        "Roles": [
+          {
+            "Ref": "PriceServiceRole1F3A47DE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "Stock38709CBC": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "sku",
+            "AttributeType": "S",
+          },
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "sku",
+            "KeyType": "HASH",
+          },
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "Validate809E4227": {
+      "DependsOn": [
+        "ValidateServiceRoleDefaultPolicyE2C7DF76",
+        "ValidateServiceRole96202E20",
+      ],
+      "Properties": {
+        "Code": {
+          "ZipFile": "exports.handler = async (e) => e;",
+        },
+        "Environment": {
+          "Variables": {
+            "FLOW_PAYLOAD_BUCKET": {
+              "Ref": "OrderFlowPayloadBucketD37B8B2B",
+            },
+            "FLOW_PAYLOAD_MODE": "auto",
+            "FLOW_PAYLOAD_PREFIX": "flow/TestStackOrderFlow6D17FD65",
+            "FLOW_PAYLOAD_THRESHOLD_KB": "200",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "ValidateServiceRole96202E20",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ValidateServiceRole96202E20": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ValidateServiceRoleDefaultPolicyE2C7DF76": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": [
+                        "OrderFlowPayloadBucketD37B8B2B",
+                        "Arn",
+                      ],
+                    },
+                    "/flow/TestStackOrderFlow6D17FD65/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ValidateServiceRoleDefaultPolicyE2C7DF76",
+        "Roles": [
+          {
+            "Ref": "ValidateServiceRole96202E20",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

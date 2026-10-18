@@ -99,13 +99,30 @@ project.testTask.spawn(
   }),
 );
 
-// The root build (via its test step) also builds and tests the runtime package.
+// The root build (via its test step) also builds and tests the runtime package,
+// then installs the packed builds into the example app, synthesises and audits it.
 project.testTask.spawn(
   project.addTask("build:runtime", {
     description: "Build and test the runtime package",
     steps: [
       { exec: "npm ci", cwd: "runtime" },
       { exec: "npx projen build", cwd: "runtime" },
+    ],
+  }),
+);
+
+project.testTask.spawn(
+  project.addTask("test:example", {
+    description:
+      "Pack the local builds into examples/order-flow, synth it and audit its dependencies",
+    steps: [
+      { exec: "node scripts/pack-local.js", cwd: "examples/order-flow" },
+      { exec: "npm install --no-audit --no-fund", cwd: "examples/order-flow" },
+      { exec: "npm run synth", cwd: "examples/order-flow" },
+      {
+        exec: "node ../../build-tools/audit-check.js .",
+        cwd: "examples/order-flow",
+      },
     ],
   }),
 );

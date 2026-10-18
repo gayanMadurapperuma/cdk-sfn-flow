@@ -21,7 +21,7 @@ export class PassBuilder implements StepBuilder {
   public readonly terminal = false;
   public readonly next?: string;
 
-  constructor(private readonly props: PassStepProps) {
+  constructor(public readonly props: PassStepProps) {
     this.next = props.next;
   }
 

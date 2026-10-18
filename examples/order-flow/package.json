@@ -1,0 +1,30 @@
+{
+  "name": "cdk-sfn-flow-example-order-flow",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deployable example for cdk-sfn-flow: an order workflow with S3 claim-check payloads.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "pack-local": "node scripts/pack-local.js",
+    "build": "tsc",
+    "synth": "npm run build && cdk synth --quiet",
+    "deploy": "npm run build && cdk deploy",
+    "integ": "npm run build && integ-runner --directory dist/integ --parallel-regions us-east-1 --update-on-failed"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.273.0",
+    "cdk-sfn-flow": "file:.local/cdk-sfn-flow.tgz",
+    "cdk-sfn-flow-runtime": "file:.local/cdk-sfn-flow-runtime.tgz",
+    "constructs": "^10.8.1"
+  },
+  "devDependencies": {
+    "@aws-cdk/integ-runner": "2.205.6",
+    "@aws-cdk/integ-tests-alpha": "2.273.0-alpha.0",
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^20",
+    "aws-cdk": "^2.1145.0",
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.3"
+  }
+}

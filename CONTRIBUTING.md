@@ -9,7 +9,7 @@ This repository is managed by [projen](https://github.com/projen/projen). Do not
 
 ```bash
 npm install
-npx projen build   # compile (jsii), lint, test, package, and build/test runtime/
+npx projen build   # jsii compile (TS + Python), lint, tests, runtime/, examples/order-flow synth, dependency audit
 npx projen test    # tests only
 ```
 
@@ -17,6 +17,11 @@ Layout:
 
 - `src/`: the jsii construct library (`cdk-sfn-flow`, published to npm and PyPI)
 - `runtime/`: a plain TypeScript package (`cdk-sfn-flow-runtime`) used inside Lambda handlers
+- `examples/order-flow/`: a deployable example app (installs the locally packed builds)
+- `docs/`: payload strategy and validation rule reference
+
+The README example is snapshot-tested (`test/readme-example.test.ts`). If you change generated output on
+purpose, update the snapshot with `npx projen test` and commit it.
 
 ## Pull requests
 
