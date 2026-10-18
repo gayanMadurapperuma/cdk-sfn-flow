@@ -43,6 +43,12 @@ const project = new awscdk.AwsCdkConstructLibrary({
   npmignoreEnabled: true,
 });
 
+// The compiler is the core of the library: keep it well covered.
+project.package.file.addOverride("jest.coverageThreshold", {
+  "./src/compiler/": { statements: 90, branches: 90, functions: 90, lines: 90 },
+});
+project.package.file.addOverride("jest.watchman", false);
+
 // Folders that are not part of the jsii package.
 project.npmignore?.exclude("/runtime/", "/examples/", "/docs/");
 project.eslint?.addIgnorePattern("runtime/");
