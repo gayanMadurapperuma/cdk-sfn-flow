@@ -523,6 +523,195 @@ Default timeout for `task` and `subflow` steps.
 
 ---
 
+### EcsRunTaskInvokeProps <a name="EcsRunTaskInvokeProps" id="cdk-sfn-flow.EcsRunTaskInvokeProps"></a>
+
+Properties for `Invoke.ecsRunTask`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.EcsRunTaskInvokeProps.Initializer"></a>
+
+```typescript
+import { EcsRunTaskInvokeProps } from 'cdk-sfn-flow'
+
+const ecsRunTaskInvokeProps: EcsRunTaskInvokeProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.cluster">cluster</a></code> | <code>aws-cdk-lib.aws_ecs.ICluster</code> | The cluster to run the task on. |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.taskDefinition">taskDefinition</a></code> | <code>aws-cdk-lib.aws_ecs.TaskDefinition</code> | The task definition to run. |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.assignPublicIp">assignPublicIp</a></code> | <code>boolean</code> | Assign a public IP address (Fargate). |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.containerOverrides">containerOverrides</a></code> | <code>aws-cdk-lib.aws_stepfunctions_tasks.ContainerOverride[]</code> | Container overrides. |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.launchTarget">launchTarget</a></code> | <code>aws-cdk-lib.aws_stepfunctions_tasks.IEcsLaunchTarget</code> | Where to run the task. |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.securityGroups">securityGroups</a></code> | <code>aws-cdk-lib.aws_ec2.ISecurityGroup[]</code> | Security groups for awsvpc networking. |
+| <code><a href="#cdk-sfn-flow.EcsRunTaskInvokeProps.property.subnets">subnets</a></code> | <code>aws-cdk-lib.aws_ec2.SubnetSelection</code> | Subnets for awsvpc networking. |
+
+---
+
+##### `cluster`<sup>Required</sup> <a name="cluster" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.cluster"></a>
+
+```typescript
+public readonly cluster: ICluster;
+```
+
+- *Type:* aws-cdk-lib.aws_ecs.ICluster
+
+The cluster to run the task on.
+
+---
+
+##### `taskDefinition`<sup>Required</sup> <a name="taskDefinition" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.taskDefinition"></a>
+
+```typescript
+public readonly taskDefinition: TaskDefinition;
+```
+
+- *Type:* aws-cdk-lib.aws_ecs.TaskDefinition
+
+The task definition to run.
+
+---
+
+##### `assignPublicIp`<sup>Optional</sup> <a name="assignPublicIp" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.assignPublicIp"></a>
+
+```typescript
+public readonly assignPublicIp: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Assign a public IP address (Fargate).
+
+---
+
+##### `containerOverrides`<sup>Optional</sup> <a name="containerOverrides" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.containerOverrides"></a>
+
+```typescript
+public readonly containerOverrides: ContainerOverride[];
+```
+
+- *Type:* aws-cdk-lib.aws_stepfunctions_tasks.ContainerOverride[]
+- *Default:* none
+
+Container overrides.
+
+Environment values may be JSONata expressions.
+
+---
+
+##### `launchTarget`<sup>Optional</sup> <a name="launchTarget" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.launchTarget"></a>
+
+```typescript
+public readonly launchTarget: IEcsLaunchTarget;
+```
+
+- *Type:* aws-cdk-lib.aws_stepfunctions_tasks.IEcsLaunchTarget
+- *Default:* Fargate, latest platform version
+
+Where to run the task.
+
+---
+
+##### `securityGroups`<sup>Optional</sup> <a name="securityGroups" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.securityGroups"></a>
+
+```typescript
+public readonly securityGroups: ISecurityGroup[];
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.ISecurityGroup[]
+- *Default:* a new security group
+
+Security groups for awsvpc networking.
+
+---
+
+##### `subnets`<sup>Optional</sup> <a name="subnets" id="cdk-sfn-flow.EcsRunTaskInvokeProps.property.subnets"></a>
+
+```typescript
+public readonly subnets: SubnetSelection;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.SubnetSelection
+- *Default:* private subnets of the cluster's VPC
+
+Subnets for awsvpc networking.
+
+---
+
+### EventBridgeInvokeProps <a name="EventBridgeInvokeProps" id="cdk-sfn-flow.EventBridgeInvokeProps"></a>
+
+Properties for `Invoke.eventBridge`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.EventBridgeInvokeProps.Initializer"></a>
+
+```typescript
+import { EventBridgeInvokeProps } from 'cdk-sfn-flow'
+
+const eventBridgeInvokeProps: EventBridgeInvokeProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.EventBridgeInvokeProps.property.detailExpr">detailExpr</a></code> | <code>string</code> | JSONata expression for the event detail. |
+| <code><a href="#cdk-sfn-flow.EventBridgeInvokeProps.property.detailType">detailType</a></code> | <code>string</code> | The event detail type. |
+| <code><a href="#cdk-sfn-flow.EventBridgeInvokeProps.property.source">source</a></code> | <code>string</code> | The event source. |
+| <code><a href="#cdk-sfn-flow.EventBridgeInvokeProps.property.bus">bus</a></code> | <code>aws-cdk-lib.aws_events.IEventBus</code> | The event bus. |
+
+---
+
+##### `detailExpr`<sup>Required</sup> <a name="detailExpr" id="cdk-sfn-flow.EventBridgeInvokeProps.property.detailExpr"></a>
+
+```typescript
+public readonly detailExpr: string;
+```
+
+- *Type:* string
+
+JSONata expression for the event detail.
+
+---
+
+##### `detailType`<sup>Required</sup> <a name="detailType" id="cdk-sfn-flow.EventBridgeInvokeProps.property.detailType"></a>
+
+```typescript
+public readonly detailType: string;
+```
+
+- *Type:* string
+
+The event detail type.
+
+---
+
+##### `source`<sup>Required</sup> <a name="source" id="cdk-sfn-flow.EventBridgeInvokeProps.property.source"></a>
+
+```typescript
+public readonly source: string;
+```
+
+- *Type:* string
+
+The event source.
+
+---
+
+##### `bus`<sup>Optional</sup> <a name="bus" id="cdk-sfn-flow.EventBridgeInvokeProps.property.bus"></a>
+
+```typescript
+public readonly bus: IEventBus;
+```
+
+- *Type:* aws-cdk-lib.aws_events.IEventBus
+- *Default:* the account's default event bus
+
+The event bus.
+
+---
+
 ### FailStepProps <a name="FailStepProps" id="cdk-sfn-flow.FailStepProps"></a>
 
 Properties for `Step.fail`.
@@ -696,6 +885,81 @@ public readonly workflowType: WorkflowType;
 - *Default:* WorkflowType.STANDARD
 
 The workflow type.
+
+---
+
+### HttpInvokeOptions <a name="HttpInvokeOptions" id="cdk-sfn-flow.HttpInvokeOptions"></a>
+
+Options for `Invoke.http`. Values may be literals or JSONata expressions.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.HttpInvokeOptions.Initializer"></a>
+
+```typescript
+import { HttpInvokeOptions } from 'cdk-sfn-flow'
+
+const httpInvokeOptions: HttpInvokeOptions = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.HttpInvokeOptions.property.body">body</a></code> | <code>string</code> | Request body. |
+| <code><a href="#cdk-sfn-flow.HttpInvokeOptions.property.headers">headers</a></code> | <code>string</code> | Request headers (a JSONata expression that evaluates to an object). |
+| <code><a href="#cdk-sfn-flow.HttpInvokeOptions.property.path">path</a></code> | <code>string</code> | Path appended to the URL (after a `/`). |
+| <code><a href="#cdk-sfn-flow.HttpInvokeOptions.property.queryParameters">queryParameters</a></code> | <code>string</code> | Query parameters (a JSONata expression that evaluates to an object). |
+
+---
+
+##### `body`<sup>Optional</sup> <a name="body" id="cdk-sfn-flow.HttpInvokeOptions.property.body"></a>
+
+```typescript
+public readonly body: string;
+```
+
+- *Type:* string
+- *Default:* no body
+
+Request body.
+
+---
+
+##### `headers`<sup>Optional</sup> <a name="headers" id="cdk-sfn-flow.HttpInvokeOptions.property.headers"></a>
+
+```typescript
+public readonly headers: string;
+```
+
+- *Type:* string
+- *Default:* no extra headers
+
+Request headers (a JSONata expression that evaluates to an object).
+
+---
+
+##### `path`<sup>Optional</sup> <a name="path" id="cdk-sfn-flow.HttpInvokeOptions.property.path"></a>
+
+```typescript
+public readonly path: string;
+```
+
+- *Type:* string
+- *Default:* the last path segment of `url`
+
+Path appended to the URL (after a `/`).
+
+---
+
+##### `queryParameters`<sup>Optional</sup> <a name="queryParameters" id="cdk-sfn-flow.HttpInvokeOptions.property.queryParameters"></a>
+
+```typescript
+public readonly queryParameters: string;
+```
+
+- *Type:* string
+- *Default:* none
+
+Query parameters (a JSONata expression that evaluates to an object).
 
 ---
 
@@ -1120,6 +1384,200 @@ public readonly maxDelay: Duration;
 - *Default:* no maximum
 
 Upper bound for the delay between attempts.
+
+---
+
+### SdkInvokeProps <a name="SdkInvokeProps" id="cdk-sfn-flow.SdkInvokeProps"></a>
+
+Properties for `Invoke.sdk`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.SdkInvokeProps.Initializer"></a>
+
+```typescript
+import { SdkInvokeProps } from 'cdk-sfn-flow'
+
+const sdkInvokeProps: SdkInvokeProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.SdkInvokeProps.property.action">action</a></code> | <code>string</code> | The API action, camelCase as in the SDK (e.g. `getObject`). |
+| <code><a href="#cdk-sfn-flow.SdkInvokeProps.property.iamResources">iamResources</a></code> | <code>string[]</code> | Resource ARNs the action is granted on. |
+| <code><a href="#cdk-sfn-flow.SdkInvokeProps.property.service">service</a></code> | <code>string</code> | The AWS SDK service name, lower case (e.g. `s3`, `dynamodb`, `secretsmanager`). |
+| <code><a href="#cdk-sfn-flow.SdkInvokeProps.property.iamAction">iamAction</a></code> | <code>string</code> | The IAM action, when it does not follow `service:Action`. |
+| <code><a href="#cdk-sfn-flow.SdkInvokeProps.property.paramsExpr">paramsExpr</a></code> | <code>string</code> | JSONata expression for the API parameters. |
+
+---
+
+##### `action`<sup>Required</sup> <a name="action" id="cdk-sfn-flow.SdkInvokeProps.property.action"></a>
+
+```typescript
+public readonly action: string;
+```
+
+- *Type:* string
+
+The API action, camelCase as in the SDK (e.g. `getObject`).
+
+---
+
+##### `iamResources`<sup>Required</sup> <a name="iamResources" id="cdk-sfn-flow.SdkInvokeProps.property.iamResources"></a>
+
+```typescript
+public readonly iamResources: string[];
+```
+
+- *Type:* string[]
+
+Resource ARNs the action is granted on.
+
+---
+
+##### `service`<sup>Required</sup> <a name="service" id="cdk-sfn-flow.SdkInvokeProps.property.service"></a>
+
+```typescript
+public readonly service: string;
+```
+
+- *Type:* string
+
+The AWS SDK service name, lower case (e.g. `s3`, `dynamodb`, `secretsmanager`).
+
+---
+
+##### `iamAction`<sup>Optional</sup> <a name="iamAction" id="cdk-sfn-flow.SdkInvokeProps.property.iamAction"></a>
+
+```typescript
+public readonly iamAction: string;
+```
+
+- *Type:* string
+- *Default:* `<service>:<Action>`
+
+The IAM action, when it does not follow `service:Action`.
+
+---
+
+##### `paramsExpr`<sup>Optional</sup> <a name="paramsExpr" id="cdk-sfn-flow.SdkInvokeProps.property.paramsExpr"></a>
+
+```typescript
+public readonly paramsExpr: string;
+```
+
+- *Type:* string
+- *Default:* no parameters
+
+JSONata expression for the API parameters.
+
+---
+
+### SnsInvokeOptions <a name="SnsInvokeOptions" id="cdk-sfn-flow.SnsInvokeOptions"></a>
+
+Options for `Invoke.sns`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.SnsInvokeOptions.Initializer"></a>
+
+```typescript
+import { SnsInvokeOptions } from 'cdk-sfn-flow'
+
+const snsInvokeOptions: SnsInvokeOptions = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.SnsInvokeOptions.property.messageGroupId">messageGroupId</a></code> | <code>string</code> | Message group id (FIFO topics). |
+| <code><a href="#cdk-sfn-flow.SnsInvokeOptions.property.subject">subject</a></code> | <code>string</code> | Message subject (email subscriptions). |
+
+---
+
+##### `messageGroupId`<sup>Optional</sup> <a name="messageGroupId" id="cdk-sfn-flow.SnsInvokeOptions.property.messageGroupId"></a>
+
+```typescript
+public readonly messageGroupId: string;
+```
+
+- *Type:* string
+- *Default:* none
+
+Message group id (FIFO topics).
+
+---
+
+##### `subject`<sup>Optional</sup> <a name="subject" id="cdk-sfn-flow.SnsInvokeOptions.property.subject"></a>
+
+```typescript
+public readonly subject: string;
+```
+
+- *Type:* string
+- *Default:* none
+
+Message subject (email subscriptions).
+
+---
+
+### SqsInvokeOptions <a name="SqsInvokeOptions" id="cdk-sfn-flow.SqsInvokeOptions"></a>
+
+Options for `Invoke.sqs`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.SqsInvokeOptions.Initializer"></a>
+
+```typescript
+import { SqsInvokeOptions } from 'cdk-sfn-flow'
+
+const sqsInvokeOptions: SqsInvokeOptions = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.SqsInvokeOptions.property.delay">delay</a></code> | <code>aws-cdk-lib.Duration</code> | Delivery delay. |
+| <code><a href="#cdk-sfn-flow.SqsInvokeOptions.property.messageDeduplicationId">messageDeduplicationId</a></code> | <code>string</code> | Message deduplication id (FIFO queues without content-based deduplication). |
+| <code><a href="#cdk-sfn-flow.SqsInvokeOptions.property.messageGroupId">messageGroupId</a></code> | <code>string</code> | Message group id (FIFO queues). |
+
+---
+
+##### `delay`<sup>Optional</sup> <a name="delay" id="cdk-sfn-flow.SqsInvokeOptions.property.delay"></a>
+
+```typescript
+public readonly delay: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
+- *Default:* the queue's default delay
+
+Delivery delay.
+
+---
+
+##### `messageDeduplicationId`<sup>Optional</sup> <a name="messageDeduplicationId" id="cdk-sfn-flow.SqsInvokeOptions.property.messageDeduplicationId"></a>
+
+```typescript
+public readonly messageDeduplicationId: string;
+```
+
+- *Type:* string
+- *Default:* none
+
+Message deduplication id (FIFO queues without content-based deduplication).
+
+---
+
+##### `messageGroupId`<sup>Optional</sup> <a name="messageGroupId" id="cdk-sfn-flow.SqsInvokeOptions.property.messageGroupId"></a>
+
+```typescript
+public readonly messageGroupId: string;
+```
+
+- *Type:* string
+- *Default:* none
+
+Message group id (FIFO queues).
 
 ---
 
@@ -1575,7 +2033,214 @@ The service a `Step.task` calls.
 
 | **Name** | **Description** |
 | --- | --- |
+| <code><a href="#cdk-sfn-flow.Invoke.dynamoDelete">dynamoDelete</a></code> | DynamoDB DeleteItem. |
+| <code><a href="#cdk-sfn-flow.Invoke.dynamoGet">dynamoGet</a></code> | DynamoDB GetItem. |
+| <code><a href="#cdk-sfn-flow.Invoke.dynamoPut">dynamoPut</a></code> | DynamoDB PutItem. |
+| <code><a href="#cdk-sfn-flow.Invoke.dynamoQuery">dynamoQuery</a></code> | DynamoDB Query (through the AWS SDK integration). |
+| <code><a href="#cdk-sfn-flow.Invoke.dynamoUpdate">dynamoUpdate</a></code> | DynamoDB UpdateItem. |
+| <code><a href="#cdk-sfn-flow.Invoke.ecsRunTask">ecsRunTask</a></code> | Runs an ECS task. |
+| <code><a href="#cdk-sfn-flow.Invoke.eventBridge">eventBridge</a></code> | Puts an EventBridge event with a JSONata detail. |
+| <code><a href="#cdk-sfn-flow.Invoke.http">http</a></code> | Calls an HTTPS endpoint through an EventBridge connection. |
 | <code><a href="#cdk-sfn-flow.Invoke.lambda">lambda</a></code> | Invoke a Lambda function. |
+| <code><a href="#cdk-sfn-flow.Invoke.sdk">sdk</a></code> | Calls any AWS API through the AWS SDK integration, granting exactly `service:Action`. |
+| <code><a href="#cdk-sfn-flow.Invoke.sns">sns</a></code> | Publishes an SNS message with a JSONata body. |
+| <code><a href="#cdk-sfn-flow.Invoke.sqs">sqs</a></code> | Sends an SQS message with a JSONata body. |
+
+---
+
+##### `dynamoDelete` <a name="dynamoDelete" id="cdk-sfn-flow.Invoke.dynamoDelete"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.dynamoDelete(table: ITable, paramsExpr: string)
+```
+
+DynamoDB DeleteItem.
+
+`paramsExpr` is merged with `TableName`.
+
+###### `table`<sup>Required</sup> <a name="table" id="cdk-sfn-flow.Invoke.dynamoDelete.parameter.table"></a>
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+---
+
+###### `paramsExpr`<sup>Required</sup> <a name="paramsExpr" id="cdk-sfn-flow.Invoke.dynamoDelete.parameter.paramsExpr"></a>
+
+- *Type:* string
+
+---
+
+##### `dynamoGet` <a name="dynamoGet" id="cdk-sfn-flow.Invoke.dynamoGet"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.dynamoGet(table: ITable, paramsExpr: string)
+```
+
+DynamoDB GetItem.
+
+`paramsExpr` is merged with `TableName`, e.g.
+`{% { "Key": { "sku": { "S": $states.input.sku } } } %}`.
+
+###### `table`<sup>Required</sup> <a name="table" id="cdk-sfn-flow.Invoke.dynamoGet.parameter.table"></a>
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+---
+
+###### `paramsExpr`<sup>Required</sup> <a name="paramsExpr" id="cdk-sfn-flow.Invoke.dynamoGet.parameter.paramsExpr"></a>
+
+- *Type:* string
+
+---
+
+##### `dynamoPut` <a name="dynamoPut" id="cdk-sfn-flow.Invoke.dynamoPut"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.dynamoPut(table: ITable, paramsExpr: string)
+```
+
+DynamoDB PutItem.
+
+`paramsExpr` is merged with `TableName`.
+
+###### `table`<sup>Required</sup> <a name="table" id="cdk-sfn-flow.Invoke.dynamoPut.parameter.table"></a>
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+---
+
+###### `paramsExpr`<sup>Required</sup> <a name="paramsExpr" id="cdk-sfn-flow.Invoke.dynamoPut.parameter.paramsExpr"></a>
+
+- *Type:* string
+
+---
+
+##### `dynamoQuery` <a name="dynamoQuery" id="cdk-sfn-flow.Invoke.dynamoQuery"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.dynamoQuery(table: ITable, paramsExpr: string)
+```
+
+DynamoDB Query (through the AWS SDK integration).
+
+`paramsExpr` is merged with
+`TableName`; Query is granted on the table and its indexes.
+
+###### `table`<sup>Required</sup> <a name="table" id="cdk-sfn-flow.Invoke.dynamoQuery.parameter.table"></a>
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+---
+
+###### `paramsExpr`<sup>Required</sup> <a name="paramsExpr" id="cdk-sfn-flow.Invoke.dynamoQuery.parameter.paramsExpr"></a>
+
+- *Type:* string
+
+---
+
+##### `dynamoUpdate` <a name="dynamoUpdate" id="cdk-sfn-flow.Invoke.dynamoUpdate"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.dynamoUpdate(table: ITable, paramsExpr: string)
+```
+
+DynamoDB UpdateItem.
+
+`paramsExpr` is merged with `TableName`.
+
+###### `table`<sup>Required</sup> <a name="table" id="cdk-sfn-flow.Invoke.dynamoUpdate.parameter.table"></a>
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+---
+
+###### `paramsExpr`<sup>Required</sup> <a name="paramsExpr" id="cdk-sfn-flow.Invoke.dynamoUpdate.parameter.paramsExpr"></a>
+
+- *Type:* string
+
+---
+
+##### `ecsRunTask` <a name="ecsRunTask" id="cdk-sfn-flow.Invoke.ecsRunTask"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.ecsRunTask(props: EcsRunTaskInvokeProps)
+```
+
+Runs an ECS task.
+
+Use `TaskPattern.SYNC` to wait for it to stop.
+
+###### `props`<sup>Required</sup> <a name="props" id="cdk-sfn-flow.Invoke.ecsRunTask.parameter.props"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.EcsRunTaskInvokeProps">EcsRunTaskInvokeProps</a>
+
+---
+
+##### `eventBridge` <a name="eventBridge" id="cdk-sfn-flow.Invoke.eventBridge"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.eventBridge(props: EventBridgeInvokeProps)
+```
+
+Puts an EventBridge event with a JSONata detail.
+
+###### `props`<sup>Required</sup> <a name="props" id="cdk-sfn-flow.Invoke.eventBridge.parameter.props"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.EventBridgeInvokeProps">EventBridgeInvokeProps</a>
+
+---
+
+##### `http` <a name="http" id="cdk-sfn-flow.Invoke.http"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.http(connection: IConnection, url: string, method: string, options?: HttpInvokeOptions)
+```
+
+Calls an HTTPS endpoint through an EventBridge connection.
+
+###### `connection`<sup>Required</sup> <a name="connection" id="cdk-sfn-flow.Invoke.http.parameter.connection"></a>
+
+- *Type:* aws-cdk-lib.aws_events.IConnection
+
+the connection that holds the credentials.
+
+---
+
+###### `url`<sup>Required</sup> <a name="url" id="cdk-sfn-flow.Invoke.http.parameter.url"></a>
+
+- *Type:* string
+
+the https URL, or a JSONata expression.
+
+---
+
+###### `method`<sup>Required</sup> <a name="method" id="cdk-sfn-flow.Invoke.http.parameter.method"></a>
+
+- *Type:* string
+
+the HTTP method, or a JSONata expression.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="cdk-sfn-flow.Invoke.http.parameter.options"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.HttpInvokeOptions">HttpInvokeOptions</a>
 
 ---
 
@@ -1594,6 +2259,78 @@ The task output is the function's return value.
 ###### `fn`<sup>Required</sup> <a name="fn" id="cdk-sfn-flow.Invoke.lambda.parameter.fn"></a>
 
 - *Type:* aws-cdk-lib.aws_lambda.IFunction
+
+---
+
+##### `sdk` <a name="sdk" id="cdk-sfn-flow.Invoke.sdk"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.sdk(props: SdkInvokeProps)
+```
+
+Calls any AWS API through the AWS SDK integration, granting exactly `service:Action`.
+
+###### `props`<sup>Required</sup> <a name="props" id="cdk-sfn-flow.Invoke.sdk.parameter.props"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.SdkInvokeProps">SdkInvokeProps</a>
+
+---
+
+##### `sns` <a name="sns" id="cdk-sfn-flow.Invoke.sns"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.sns(topic: ITopic, messageExpr: string, options?: SnsInvokeOptions)
+```
+
+Publishes an SNS message with a JSONata body.
+
+###### `topic`<sup>Required</sup> <a name="topic" id="cdk-sfn-flow.Invoke.sns.parameter.topic"></a>
+
+- *Type:* aws-cdk-lib.aws_sns.ITopic
+
+---
+
+###### `messageExpr`<sup>Required</sup> <a name="messageExpr" id="cdk-sfn-flow.Invoke.sns.parameter.messageExpr"></a>
+
+- *Type:* string
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="cdk-sfn-flow.Invoke.sns.parameter.options"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.SnsInvokeOptions">SnsInvokeOptions</a>
+
+---
+
+##### `sqs` <a name="sqs" id="cdk-sfn-flow.Invoke.sqs"></a>
+
+```typescript
+import { Invoke } from 'cdk-sfn-flow'
+
+Invoke.sqs(queue: IQueue, bodyExpr: string, options?: SqsInvokeOptions)
+```
+
+Sends an SQS message with a JSONata body.
+
+###### `queue`<sup>Required</sup> <a name="queue" id="cdk-sfn-flow.Invoke.sqs.parameter.queue"></a>
+
+- *Type:* aws-cdk-lib.aws_sqs.IQueue
+
+---
+
+###### `bodyExpr`<sup>Required</sup> <a name="bodyExpr" id="cdk-sfn-flow.Invoke.sqs.parameter.bodyExpr"></a>
+
+- *Type:* string
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="cdk-sfn-flow.Invoke.sqs.parameter.options"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.SqsInvokeOptions">SqsInvokeOptions</a>
 
 ---
 

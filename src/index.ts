@@ -9,6 +9,16 @@ export {
 } from "./types";
 export { LoggingConfig } from "./observability";
 export { Invoke } from "./invoke/invoke";
+export {
+  EcsRunTaskInvokeProps,
+  HttpInvokeOptions,
+  SdkInvokeProps,
+} from "./invoke/compute";
+export {
+  EventBridgeInvokeProps,
+  SnsInvokeOptions,
+  SqsInvokeOptions,
+} from "./invoke/messaging";
 export * from "./invoke/task-pattern";
 export * from "./steps/step";
 export * from "./steps/step-type";

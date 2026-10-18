@@ -90,6 +90,7 @@ export class TaskBuilder implements StepBuilder {
     for (const [field, value] of Object.entries(target.expressions)) {
       v.expression(field, value);
     }
+    target.validate?.(v);
     if (!target.supportedPatterns.includes(this.pattern)) {
       v.error(
         `${target.name} does not support TaskPattern.${this.pattern} (supported: ${target.supportedPatterns.join(", ")})`,
