@@ -2,7 +2,7 @@
   "dependencies": [
     {
       "name": "@aws-sdk/client-s3",
-      "version": "^3",
+      "version": "^3.1152.0",
       "type": "build"
     },
     {
@@ -26,6 +26,7 @@
     },
     {
       "name": "aws-sdk-client-mock",
+      "version": "^4.1.0",
       "type": "build"
     },
     {
@@ -72,7 +73,7 @@
     },
     {
       "name": "@aws-sdk/client-s3",
-      "version": "^3",
+      "version": "^3.1152.0",
       "type": "peer"
     }
   ],

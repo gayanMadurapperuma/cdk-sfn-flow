@@ -1,0 +1,10 @@
+{
+  "advisories": [
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "reason": "No patched braces release exists (<=3.0.3, latest is 3.0.3). Dev-only via fast-glob/micromatch in projen and jsii-docgen; glob patterns come from our own build config, never from untrusted input. Remove once a fix ships.",
+      "added": "2026-10-18"
+    }
+  ]
+}

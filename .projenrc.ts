@@ -48,11 +48,18 @@ project.npmignore?.exclude("/runtime/", "/examples/", "/docs/");
 project.eslint?.addIgnorePattern("runtime/");
 project.eslint?.addIgnorePattern("examples/");
 
+// js-yaml@3 (via jest coverage tooling) pulls in argparse@1 -> sprintf-js, which has an
+// unpatched advisory. load-nyc-config only calls `load`, which js-yaml@4 still provides.
+const auditOverrides = {
+  "@istanbuljs/load-nyc-config": { "js-yaml": "^4.1.0" },
+};
+project.package.addField("overrides", auditOverrides);
+
 /**
  * Non-jsii runtime helper package used inside Lambda handlers.
  * Publishing is wired up in the release-prep milestone.
  */
-new typescript.TypeScriptProject({
+const runtime = new typescript.TypeScriptProject({
   parent: project,
   outdir: "runtime",
   name: "cdk-sfn-flow-runtime",
@@ -69,9 +76,21 @@ new typescript.TypeScriptProject({
   prettier: true,
   eslint: true,
   release: false,
-  peerDeps: ["@aws-sdk/client-s3@^3"],
-  devDeps: ["@aws-sdk/client-s3@^3", "aws-sdk-client-mock"],
+  peerDeps: ["@aws-sdk/client-s3@^3.1152.0"],
+  devDeps: ["@aws-sdk/client-s3@^3.1152.0", "aws-sdk-client-mock@^4.1.0"],
 });
+runtime.package.addField("overrides", auditOverrides);
+
+// Dependency audit: prod deps must be clean, dev advisories must be allow-listed.
+project.testTask.spawn(
+  project.addTask("audit", {
+    description: "Fail on unapproved npm audit advisories",
+    steps: [
+      { exec: "node build-tools/audit-check.js ." },
+      { exec: "node build-tools/audit-check.js runtime" },
+    ],
+  }),
+);
 
 // The root build (via its test step) also builds and tests the runtime package.
 project.testTask.spawn(
