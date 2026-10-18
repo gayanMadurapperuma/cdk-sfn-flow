@@ -32,10 +32,19 @@ export function synth(build: (stack: Stack) => FlowWorkflowProps): {
   return { template, asl: definition(template), stack, flow };
 }
 
-/** Parses the (first) state machine definition, replacing CloudFormation tokens with placeholders. */
-export function definition(template: Template): any {
+/**
+ * Parses the definition of the state machine of the workflow with the given construct id
+ * (default `Flow`), replacing CloudFormation tokens with placeholders.
+ */
+export function definition(template: Template, workflowId = "Flow"): any {
   const machines = template.findResources("AWS::StepFunctions::StateMachine");
-  const body = Object.values(machines)[0].Properties.DefinitionString;
+  const logicalId = Object.keys(machines).find((id) =>
+    id.startsWith(`${workflowId}StateMachine`),
+  );
+  if (!logicalId) {
+    throw new Error(`no state machine for workflow '${workflowId}'`);
+  }
+  const body = machines[logicalId].Properties.DefinitionString;
   const text =
     typeof body === "string"
       ? body

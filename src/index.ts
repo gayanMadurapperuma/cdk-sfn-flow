@@ -29,3 +29,5 @@ export { PassStepProps } from "./steps/pass";
 export { SucceedStepProps } from "./steps/succeed";
 export { FailStepProps } from "./steps/fail";
 export { RawStepProps } from "./steps/raw";
+export { ParallelBranch, ParallelStepProps } from "./steps/parallel";
+export { SubflowStepProps } from "./steps/subflow";

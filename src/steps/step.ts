@@ -2,9 +2,11 @@ import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { StepBuilder } from "./builder";
 import { ChoiceBuilder, ChoiceStepProps } from "./choice";
 import { FailBuilder, FailStepProps } from "./fail";
+import { ParallelBuilder, ParallelStepProps } from "./parallel";
 import { PassBuilder, PassStepProps } from "./pass";
 import { RawBuilder, RawStepProps } from "./raw";
 import { StepType } from "./step-type";
+import { SubflowBuilder, SubflowStepProps } from "./subflow";
 import { SucceedBuilder, SucceedStepProps } from "./succeed";
 import { TaskBuilder, TaskStepProps } from "./task";
 import { WaitBuilder, WaitStepProps } from "./wait";
@@ -32,6 +34,20 @@ export class Step {
    */
   public static choice(id: string, props: ChoiceStepProps): Step {
     return new Step(id, new ChoiceBuilder(props));
+  }
+
+  /**
+   * Runs named branches concurrently. The output is an object keyed by branch name.
+   */
+  public static parallel(id: string, props: ParallelStepProps): Step {
+    return new Step(id, new ParallelBuilder(props));
+  }
+
+  /**
+   * Starts another state machine, by default waiting for it and returning its output.
+   */
+  public static subflow(id: string, props: SubflowStepProps): Step {
+    return new Step(id, new SubflowBuilder(props));
   }
 
   /**

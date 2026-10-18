@@ -1054,6 +1054,185 @@ Retention of the generated log group.
 
 ---
 
+### ParallelBranch <a name="ParallelBranch" id="cdk-sfn-flow.ParallelBranch"></a>
+
+A named branch of a `Step.parallel`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.ParallelBranch.Initializer"></a>
+
+```typescript
+import { ParallelBranch } from 'cdk-sfn-flow'
+
+const parallelBranch: ParallelBranch = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.ParallelBranch.property.name">name</a></code> | <code>string</code> | Branch name. |
+| <code><a href="#cdk-sfn-flow.ParallelBranch.property.steps">steps</a></code> | <code><a href="#cdk-sfn-flow.Step">Step</a>[]</code> | The steps of the branch. |
+
+---
+
+##### `name`<sup>Required</sup> <a name="name" id="cdk-sfn-flow.ParallelBranch.property.name"></a>
+
+```typescript
+public readonly name: string;
+```
+
+- *Type:* string
+
+Branch name.
+
+It becomes the key of the branch result in the parallel output.
+
+---
+
+##### `steps`<sup>Required</sup> <a name="steps" id="cdk-sfn-flow.ParallelBranch.property.steps"></a>
+
+```typescript
+public readonly steps: Step[];
+```
+
+- *Type:* <a href="#cdk-sfn-flow.Step">Step</a>[]
+
+The steps of the branch.
+
+---
+
+### ParallelStepProps <a name="ParallelStepProps" id="cdk-sfn-flow.ParallelStepProps"></a>
+
+Properties for `Step.parallel`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.ParallelStepProps.Initializer"></a>
+
+```typescript
+import { ParallelStepProps } from 'cdk-sfn-flow'
+
+const parallelStepProps: ParallelStepProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.assign">assign</a></code> | <code>{[ key: string ]: string}</code> | JSONata variables to assign, by name. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.comment">comment</a></code> | <code>string</code> | A human-readable description of the step. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.next">next</a></code> | <code>string</code> | Id of the step that runs next, or `"end"` to end the current step list. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.output">output</a></code> | <code>string</code> | JSONata expression for the step output. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.catchErrors">catchErrors</a></code> | <code><a href="#cdk-sfn-flow.CatchConfig">CatchConfig</a>[]</code> | Error routing for this step. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.disableRetry">disableRetry</a></code> | <code>boolean</code> | Turns off retries for this step. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.retry">retry</a></code> | <code><a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a></code> | Retry configuration, merged over `defaults.retry`. |
+| <code><a href="#cdk-sfn-flow.ParallelStepProps.property.branches">branches</a></code> | <code><a href="#cdk-sfn-flow.ParallelBranch">ParallelBranch</a>[]</code> | At least two named branches, run concurrently. |
+
+---
+
+##### `assign`<sup>Optional</sup> <a name="assign" id="cdk-sfn-flow.ParallelStepProps.property.assign"></a>
+
+```typescript
+public readonly assign: {[ key: string ]: string};
+```
+
+- *Type:* {[ key: string ]: string}
+- *Default:* no variables
+
+JSONata variables to assign, by name.
+
+---
+
+##### `comment`<sup>Optional</sup> <a name="comment" id="cdk-sfn-flow.ParallelStepProps.property.comment"></a>
+
+```typescript
+public readonly comment: string;
+```
+
+- *Type:* string
+- *Default:* no comment
+
+A human-readable description of the step.
+
+---
+
+##### `next`<sup>Optional</sup> <a name="next" id="cdk-sfn-flow.ParallelStepProps.property.next"></a>
+
+```typescript
+public readonly next: string;
+```
+
+- *Type:* string
+- *Default:* the following step in the list, or the end of the list for the last step
+
+Id of the step that runs next, or `"end"` to end the current step list.
+
+---
+
+##### `output`<sup>Optional</sup> <a name="output" id="cdk-sfn-flow.ParallelStepProps.property.output"></a>
+
+```typescript
+public readonly output: string;
+```
+
+- *Type:* string
+- *Default:* the state's default output
+
+JSONata expression for the step output.
+
+---
+
+##### `catchErrors`<sup>Optional</sup> <a name="catchErrors" id="cdk-sfn-flow.ParallelStepProps.property.catchErrors"></a>
+
+```typescript
+public readonly catchErrors: CatchConfig[];
+```
+
+- *Type:* <a href="#cdk-sfn-flow.CatchConfig">CatchConfig</a>[]
+- *Default:* defaults.catchErrors (top-level steps only)
+
+Error routing for this step.
+
+Replaces `defaults.catchErrors`.
+
+---
+
+##### `disableRetry`<sup>Optional</sup> <a name="disableRetry" id="cdk-sfn-flow.ParallelStepProps.property.disableRetry"></a>
+
+```typescript
+public readonly disableRetry: boolean;
+```
+
+- *Type:* boolean
+- *Default:* defaults.disableRetry
+
+Turns off retries for this step.
+
+---
+
+##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.ParallelStepProps.property.retry"></a>
+
+```typescript
+public readonly retry: RetryConfig;
+```
+
+- *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
+- *Default:* defaults.retry
+
+Retry configuration, merged over `defaults.retry`.
+
+---
+
+##### `branches`<sup>Required</sup> <a name="branches" id="cdk-sfn-flow.ParallelStepProps.property.branches"></a>
+
+```typescript
+public readonly branches: ParallelBranch[];
+```
+
+- *Type:* <a href="#cdk-sfn-flow.ParallelBranch">ParallelBranch</a>[]
+
+At least two named branches, run concurrently.
+
+---
+
 ### PassStepProps <a name="PassStepProps" id="cdk-sfn-flow.PassStepProps"></a>
 
 Properties for `Step.pass`.
@@ -1653,6 +1832,198 @@ public readonly output: string;
 - *Default:* the state's default output
 
 JSONata expression for the step output.
+
+---
+
+### SubflowStepProps <a name="SubflowStepProps" id="cdk-sfn-flow.SubflowStepProps"></a>
+
+Properties for `Step.subflow`. Set exactly one of `workflow` or `stateMachine`.
+
+#### Initializer <a name="Initializer" id="cdk-sfn-flow.SubflowStepProps.Initializer"></a>
+
+```typescript
+import { SubflowStepProps } from 'cdk-sfn-flow'
+
+const subflowStepProps: SubflowStepProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.assign">assign</a></code> | <code>{[ key: string ]: string}</code> | JSONata variables to assign, by name. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.comment">comment</a></code> | <code>string</code> | A human-readable description of the step. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.next">next</a></code> | <code>string</code> | Id of the step that runs next, or `"end"` to end the current step list. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.output">output</a></code> | <code>string</code> | JSONata expression for the step output. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.catchErrors">catchErrors</a></code> | <code><a href="#cdk-sfn-flow.CatchConfig">CatchConfig</a>[]</code> | Error routing for this step. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.disableRetry">disableRetry</a></code> | <code>boolean</code> | Turns off retries for this step. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.retry">retry</a></code> | <code><a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a></code> | Retry configuration, merged over `defaults.retry`. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.input">input</a></code> | <code>string</code> | JSONata input for the child execution. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IStateMachine</code> | Any state machine to start. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.timeout">timeout</a></code> | <code>aws-cdk-lib.Duration</code> | Task timeout. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.waitForCompletion">waitForCompletion</a></code> | <code>boolean</code> | Wait for the child execution to finish. |
+| <code><a href="#cdk-sfn-flow.SubflowStepProps.property.workflow">workflow</a></code> | <code><a href="#cdk-sfn-flow.FlowWorkflow">FlowWorkflow</a></code> | The child workflow. |
+
+---
+
+##### `assign`<sup>Optional</sup> <a name="assign" id="cdk-sfn-flow.SubflowStepProps.property.assign"></a>
+
+```typescript
+public readonly assign: {[ key: string ]: string};
+```
+
+- *Type:* {[ key: string ]: string}
+- *Default:* no variables
+
+JSONata variables to assign, by name.
+
+---
+
+##### `comment`<sup>Optional</sup> <a name="comment" id="cdk-sfn-flow.SubflowStepProps.property.comment"></a>
+
+```typescript
+public readonly comment: string;
+```
+
+- *Type:* string
+- *Default:* no comment
+
+A human-readable description of the step.
+
+---
+
+##### `next`<sup>Optional</sup> <a name="next" id="cdk-sfn-flow.SubflowStepProps.property.next"></a>
+
+```typescript
+public readonly next: string;
+```
+
+- *Type:* string
+- *Default:* the following step in the list, or the end of the list for the last step
+
+Id of the step that runs next, or `"end"` to end the current step list.
+
+---
+
+##### `output`<sup>Optional</sup> <a name="output" id="cdk-sfn-flow.SubflowStepProps.property.output"></a>
+
+```typescript
+public readonly output: string;
+```
+
+- *Type:* string
+- *Default:* the state's default output
+
+JSONata expression for the step output.
+
+---
+
+##### `catchErrors`<sup>Optional</sup> <a name="catchErrors" id="cdk-sfn-flow.SubflowStepProps.property.catchErrors"></a>
+
+```typescript
+public readonly catchErrors: CatchConfig[];
+```
+
+- *Type:* <a href="#cdk-sfn-flow.CatchConfig">CatchConfig</a>[]
+- *Default:* defaults.catchErrors (top-level steps only)
+
+Error routing for this step.
+
+Replaces `defaults.catchErrors`.
+
+---
+
+##### `disableRetry`<sup>Optional</sup> <a name="disableRetry" id="cdk-sfn-flow.SubflowStepProps.property.disableRetry"></a>
+
+```typescript
+public readonly disableRetry: boolean;
+```
+
+- *Type:* boolean
+- *Default:* defaults.disableRetry
+
+Turns off retries for this step.
+
+---
+
+##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.SubflowStepProps.property.retry"></a>
+
+```typescript
+public readonly retry: RetryConfig;
+```
+
+- *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
+- *Default:* defaults.retry
+
+Retry configuration, merged over `defaults.retry`.
+
+---
+
+##### `input`<sup>Optional</sup> <a name="input" id="cdk-sfn-flow.SubflowStepProps.property.input"></a>
+
+```typescript
+public readonly input: string;
+```
+
+- *Type:* string
+- *Default:* "{% $states.input %}"
+
+JSONata input for the child execution.
+
+---
+
+##### `stateMachine`<sup>Optional</sup> <a name="stateMachine" id="cdk-sfn-flow.SubflowStepProps.property.stateMachine"></a>
+
+```typescript
+public readonly stateMachine: IStateMachine;
+```
+
+- *Type:* aws-cdk-lib.aws_stepfunctions.IStateMachine
+- *Default:* not set
+
+Any state machine to start.
+
+---
+
+##### `timeout`<sup>Optional</sup> <a name="timeout" id="cdk-sfn-flow.SubflowStepProps.property.timeout"></a>
+
+```typescript
+public readonly timeout: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
+- *Default:* defaults.timeout
+
+Task timeout.
+
+---
+
+##### `waitForCompletion`<sup>Optional</sup> <a name="waitForCompletion" id="cdk-sfn-flow.SubflowStepProps.property.waitForCompletion"></a>
+
+```typescript
+public readonly waitForCompletion: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Wait for the child execution to finish.
+
+The step output is then the child's output.
+Not available in EXPRESS workflows.
+
+---
+
+##### `workflow`<sup>Optional</sup> <a name="workflow" id="cdk-sfn-flow.SubflowStepProps.property.workflow"></a>
+
+```typescript
+public readonly workflow: FlowWorkflow;
+```
+
+- *Type:* <a href="#cdk-sfn-flow.FlowWorkflow">FlowWorkflow</a>
+- *Default:* not set
+
+The child workflow.
 
 ---
 
@@ -2349,8 +2720,10 @@ Create steps with the static factory methods.
 | --- | --- |
 | <code><a href="#cdk-sfn-flow.Step.choice">choice</a></code> | Branches on JSONata conditions. |
 | <code><a href="#cdk-sfn-flow.Step.fail">fail</a></code> | Ends the workflow (or branch) with an error. |
+| <code><a href="#cdk-sfn-flow.Step.parallel">parallel</a></code> | Runs named branches concurrently. |
 | <code><a href="#cdk-sfn-flow.Step.pass">pass</a></code> | Transforms data or assigns variables without calling a service. |
 | <code><a href="#cdk-sfn-flow.Step.raw">raw</a></code> | Escape hatch: embeds hand-written CDK states. |
+| <code><a href="#cdk-sfn-flow.Step.subflow">subflow</a></code> | Starts another state machine, by default waiting for it and returning its output. |
 | <code><a href="#cdk-sfn-flow.Step.succeed">succeed</a></code> | Ends the current step list successfully. |
 | <code><a href="#cdk-sfn-flow.Step.task">task</a></code> | Calls a service (Lambda, DynamoDB, SQS, ...). |
 | <code><a href="#cdk-sfn-flow.Step.wait">wait</a></code> | Waits for a fixed time, a computed number of seconds, or until a timestamp. |
@@ -2400,6 +2773,30 @@ Ends the workflow (or branch) with an error.
 ###### `props`<sup>Required</sup> <a name="props" id="cdk-sfn-flow.Step.fail.parameter.props"></a>
 
 - *Type:* <a href="#cdk-sfn-flow.FailStepProps">FailStepProps</a>
+
+---
+
+##### `parallel` <a name="parallel" id="cdk-sfn-flow.Step.parallel"></a>
+
+```typescript
+import { Step } from 'cdk-sfn-flow'
+
+Step.parallel(id: string, props: ParallelStepProps)
+```
+
+Runs named branches concurrently.
+
+The output is an object keyed by branch name.
+
+###### `id`<sup>Required</sup> <a name="id" id="cdk-sfn-flow.Step.parallel.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `props`<sup>Required</sup> <a name="props" id="cdk-sfn-flow.Step.parallel.parameter.props"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.ParallelStepProps">ParallelStepProps</a>
 
 ---
 
@@ -2453,6 +2850,28 @@ The chain must use JSONata
 ###### `props`<sup>Optional</sup> <a name="props" id="cdk-sfn-flow.Step.raw.parameter.props"></a>
 
 - *Type:* <a href="#cdk-sfn-flow.RawStepProps">RawStepProps</a>
+
+---
+
+##### `subflow` <a name="subflow" id="cdk-sfn-flow.Step.subflow"></a>
+
+```typescript
+import { Step } from 'cdk-sfn-flow'
+
+Step.subflow(id: string, props: SubflowStepProps)
+```
+
+Starts another state machine, by default waiting for it and returning its output.
+
+###### `id`<sup>Required</sup> <a name="id" id="cdk-sfn-flow.Step.subflow.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `props`<sup>Required</sup> <a name="props" id="cdk-sfn-flow.Step.subflow.parameter.props"></a>
+
+- *Type:* <a href="#cdk-sfn-flow.SubflowStepProps">SubflowStepProps</a>
 
 ---
 
