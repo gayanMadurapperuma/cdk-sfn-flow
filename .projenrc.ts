@@ -86,6 +86,7 @@ const runtime = new typescript.TypeScriptProject({
   devDeps: ["@aws-sdk/client-s3@^3.1152.0", "aws-sdk-client-mock@^4.1.0"],
 });
 runtime.package.addField("overrides", auditOverrides);
+runtime.package.file.addOverride("jest.watchman", false);
 
 // Dependency audit: prod deps must be clean, dev advisories must be allow-listed.
 project.testTask.spawn(

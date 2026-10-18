@@ -36,11 +36,21 @@ export interface InvokeStateOptions {
 }
 
 /** Options for creating the task state of an invoke. */
+/** Claim-check settings passed to Lambda tasks in S3/AUTO payload mode. */
+export interface PayloadEnvelope {
+  /** Key prefix of the workflow (`flow/<workflow-name>`). */
+  readonly prefix: string;
+  /** Output fields kept inline. */
+  readonly keepInline?: string[];
+}
+
 export interface InvokeBindOptions {
   readonly pattern: TaskPattern;
   /** User JSONata input (`Step.task` `input`), if any. */
   readonly input?: string;
   readonly state: InvokeStateOptions;
+  /** Set in S3/AUTO payload mode (Lambda targets only). */
+  readonly envelope?: PayloadEnvelope;
 }
 
 /** Implementation of an invoke target. */

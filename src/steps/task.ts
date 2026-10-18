@@ -104,6 +104,14 @@ export class TaskBuilder implements StepBuilder {
         `TaskPattern.${this.pattern} is not supported in EXPRESS workflows`,
       );
     }
+    if (
+      this.props.keepInline !== undefined &&
+      target.lambdaFunction === undefined
+    ) {
+      v.error(
+        `'keepInline' applies to Invoke.lambda tasks only (got ${target.name})`,
+      );
+    }
     if (this.props.input !== undefined && !target.acceptsInput) {
       v.error(
         `${target.name} does not take 'input'; use the invoke's own expression instead`,
@@ -129,6 +137,10 @@ export class TaskBuilder implements StepBuilder {
     const task = this.props.invoke._target.bind(scope, id, {
       pattern: this.pattern,
       input: this.props.input,
+      envelope:
+        ctx.payload.offloads && this.props.invoke._target.lambdaFunction
+          ? { prefix: ctx.payload.prefix, keepInline: this.props.keepInline }
+          : undefined,
       state: {
         comment: this.props.comment,
         outputs: this.props.output,

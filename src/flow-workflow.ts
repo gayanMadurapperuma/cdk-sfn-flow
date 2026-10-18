@@ -5,6 +5,10 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
 import { PayloadConfig, PayloadStore } from "./compiler/payload";
+import {
+  analyzePayload,
+  wirePayloadInfrastructure,
+} from "./compiler/payload-wiring";
 import { FlowResolver } from "./compiler/resolver";
 import { validateWorkflow } from "./compiler/validator";
 import { configureLogging, LoggingConfig } from "./observability";
@@ -128,7 +132,12 @@ export class FlowWorkflow extends Construct {
           result.errors.map((e) => `  - ${e}`).join("\n"),
       );
     }
-    for (const warning of result.warnings) {
+    const warnings = [
+      ...result.warnings,
+      ...analyzePayload(props.steps, this.payloadStore),
+      ...wirePayloadInfrastructure(props.steps, this.payloadStore),
+    ];
+    for (const warning of warnings) {
       Annotations.of(this).addWarningV2(
         `cdk-sfn-flow:${warning.rule}`,
         warning.message,

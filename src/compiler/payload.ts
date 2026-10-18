@@ -107,3 +107,26 @@ export class PayloadStore {
     return this.bucket().arnForObjects(`${this.prefix}/*`);
   }
 }
+
+/** Environment variables read by `cdk-sfn-flow-runtime`. */
+export const PAYLOAD_ENV = {
+  bucket: "FLOW_PAYLOAD_BUCKET",
+  mode: "FLOW_PAYLOAD_MODE",
+  thresholdKb: "FLOW_PAYLOAD_THRESHOLD_KB",
+  prefix: "FLOW_PAYLOAD_PREFIX",
+};
+
+/** The environment a Lambda function needs for the configured strategy. */
+export function payloadEnvironment(store: PayloadStore): {
+  [name: string]: string;
+} {
+  const env: { [name: string]: string } = {
+    [PAYLOAD_ENV.bucket]: store.bucket().bucketName,
+    [PAYLOAD_ENV.mode]: store.strategy === PayloadStrategy.AUTO ? "auto" : "s3",
+    [PAYLOAD_ENV.prefix]: store.prefix,
+  };
+  if (store.strategy === PayloadStrategy.AUTO) {
+    env[PAYLOAD_ENV.thresholdKb] = String(store.thresholdKb);
+  }
+  return env;
+}

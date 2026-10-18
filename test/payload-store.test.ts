@@ -15,7 +15,7 @@ describe("PayloadStore", () => {
     expect(store.retentionDays).toBe(7);
     expect(store.prefix).toBe("flow/orders");
     expect(store.existingBucket).toBeUndefined();
-    Template.fromStack(stack).resourceCountIs("AWS::S3::Bucket", 0);
+    expect(stack.node.findAll().some((c) => c instanceof s3.Bucket)).toBe(false);
   });
 
   test("creates an encrypted, private, SSL-only bucket with lifecycle expiry", () => {
