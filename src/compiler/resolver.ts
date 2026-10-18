@@ -1,6 +1,7 @@
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
 import type { FlowWorkflowContext } from "./context";
+import type { PayloadStore } from "./payload";
 import { DEFAULT_CATCH_ERRORS, resolveRetry } from "../defaults";
 import { BuiltState } from "../steps/builder";
 import type { Step } from "../steps/step";
@@ -10,6 +11,7 @@ import { CatchConfig, DefaultsConfig, END, WorkflowType } from "../types";
 export interface FlowResolverOptions {
   readonly workflowType: WorkflowType;
   readonly defaults: DefaultsConfig;
+  readonly payload: PayloadStore;
   /**
    * Catches for top-level resilient steps without their own `catchErrors`
    * (`defaults.catchErrors`, or the generated global catch).
@@ -33,6 +35,7 @@ export class FlowResolver {
     this.context = {
       workflowType: options.workflowType,
       defaults: options.defaults,
+      payload: options.payload,
       buildSteps: (steps) => this.buildList(steps, false),
     };
   }

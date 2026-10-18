@@ -31,6 +31,7 @@ interface ScopeInfo {
   readonly path: string[];
   readonly steps: Step[];
   readonly top: boolean;
+  readonly context: FlowWorkflowContext;
 }
 
 /**
@@ -45,7 +46,7 @@ export function validateWorkflow(
   const warnings: ValidationWarning[] = [];
   const reserved = new Set([END, ...(options.reservedIds ?? [])]);
 
-  const scopes = collectScopes(steps);
+  const scopes = collectScopes(steps, options.context);
 
   // Ids are unique across the whole workflow, including nested steps.
   const seen = new Map<string, string>();
@@ -109,7 +110,7 @@ function validateScope(
     const builder = step._builder;
     const v: StepValidator = {
       path,
-      context: options.context,
+      context: scope.context,
       error: (message) => errors.push(`${path}: ${message}`),
       warn: (rule, message) =>
         warnings.push({ rule, message: `${path}: ${message}` }),
@@ -200,21 +201,32 @@ function validateScope(
 }
 
 /** All step lists in the tree, depth first, with their paths. */
-function collectScopes(steps: Step[]): ScopeInfo[] {
+function collectScopes(steps: Step[], root: FlowWorkflowContext): ScopeInfo[] {
   const scopes: ScopeInfo[] = [];
-  const visit = (list: Step[], path: string[], top: boolean) => {
-    scopes.push({ path, steps: list, top });
+  const visit = (
+    list: Step[],
+    path: string[],
+    top: boolean,
+    context: FlowWorkflowContext,
+  ) => {
+    scopes.push({ path, steps: list, top, context });
     for (const step of list) {
       for (const child of step._builder.children()) {
+        // Distributed Map children run as their own workflow type.
+        const childContext =
+          child.workflowType === undefined
+            ? context
+            : { ...context, workflowType: child.workflowType };
         visit(
           child.steps,
           child.name ? [...path, step.id, child.name] : [...path, step.id],
           false,
+          childContext,
         );
       }
     }
   };
-  visit(steps, [], true);
+  visit(steps, [], true, root);
   return scopes;
 }
 

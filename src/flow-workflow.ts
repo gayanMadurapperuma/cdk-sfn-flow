@@ -1,8 +1,10 @@
-import { Annotations, Duration } from "aws-cdk-lib";
+import { Annotations, Duration, Names } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
+import { PayloadConfig, PayloadStore } from "./compiler/payload";
 import { FlowResolver } from "./compiler/resolver";
 import { validateWorkflow } from "./compiler/validator";
 import { configureLogging, LoggingConfig } from "./observability";
@@ -36,6 +38,13 @@ export interface FlowWorkflowProps {
    * @default - no timeout (STANDARD: one year, EXPRESS: five minutes)
    */
   readonly timeout?: Duration;
+
+  /**
+   * Large-payload handling (inline, or S3 claim check for Lambda outputs).
+   *
+   * @default - PayloadStrategy.INLINE
+   */
+  readonly payload?: PayloadConfig;
 
   /**
    * Retry, catch and timeout defaults for `task`, `parallel`, `map` and `subflow` steps.
@@ -75,14 +84,34 @@ export class FlowWorkflow extends Construct {
   /** The workflow type. */
   public readonly workflowType: WorkflowType;
 
+  /** The workflow name used for payload keys (`flow/<workflowName>/...`). */
+  public readonly workflowName: string;
+
+  private readonly payloadStore: PayloadStore;
+
   constructor(scope: Construct, id: string, props: FlowWorkflowProps) {
     super(scope, id);
+    // Distributed Map result writers use ResultWriterV2, which CDK gates behind this flag.
+    // Setting it on this node scopes it to the workflow's own states.
+    this.node.setContext(
+      "@aws-cdk/aws-stepfunctions:useDistributedMapResultWriterV2",
+      true,
+    );
+
     this.workflowType = props.workflowType ?? WorkflowType.STANDARD;
+    this.workflowName =
+      props.name ?? Names.uniqueResourceName(this, { maxLength: 64 });
     const defaults = props.defaults ?? {};
+    this.payloadStore = new PayloadStore(
+      this,
+      this.workflowName,
+      props.payload ?? {},
+    );
 
     const resolver = new FlowResolver(new Construct(this, "States"), {
       workflowType: this.workflowType,
       defaults,
+      payload: this.payloadStore,
       topLevelCatches: defaults.catchErrors,
     });
 
@@ -123,5 +152,10 @@ export class FlowWorkflow extends Construct {
       logs: logging.logOptions,
     });
     this.role = this.stateMachine.role;
+  }
+
+  /** The payload bucket, if the workflow uses one (S3/AUTO payloads or Distributed Map results). */
+  public get payloadBucket(): s3.IBucket | undefined {
+    return this.payloadStore.existingBucket;
   }
 }

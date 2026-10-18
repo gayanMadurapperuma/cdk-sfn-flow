@@ -1,4 +1,5 @@
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
+import type { PayloadStore } from "./payload";
 import type { Step } from "../steps/step";
 import { DefaultsConfig, WorkflowType } from "../types";
 
@@ -6,6 +7,7 @@ import { DefaultsConfig, WorkflowType } from "../types";
 export interface FlowWorkflowContext {
   readonly workflowType: WorkflowType;
   readonly defaults: DefaultsConfig;
+  readonly payload: PayloadStore;
   /** Builds a nested step list (branch or iterator) and returns its chain. */
   buildSteps(steps: Step[]): sfn.IChainable;
 }

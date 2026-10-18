@@ -31,3 +31,14 @@ export { FailStepProps } from "./steps/fail";
 export { RawStepProps } from "./steps/raw";
 export { ParallelBranch, ParallelStepProps } from "./steps/parallel";
 export { SubflowStepProps } from "./steps/subflow";
+export {
+  MapBatchConfig,
+  MapItems,
+  MapMode,
+  MapResults,
+  MapResultsS3Options,
+  MapS3Source,
+  MapStepProps,
+  S3ItemFormat,
+} from "./steps/map";
+export { PayloadConfig, PayloadStrategy } from "./compiler/payload";

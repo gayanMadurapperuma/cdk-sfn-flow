@@ -3,7 +3,7 @@ import { Construct } from "constructs";
 import type { Step } from "./step";
 import { StepType } from "./step-type";
 import type { FlowWorkflowContext } from "../compiler/context";
-import { CatchConfig, RetryConfig } from "../types";
+import { CatchConfig, RetryConfig, WorkflowType } from "../types";
 
 /** A transition declared by a step (explicit `next`, a catch, or a choice branch). */
 export interface StepEdge {
@@ -14,8 +14,11 @@ export interface StepEdge {
 
 /** A nested step list (parallel branch or map iterator). */
 export interface ChildScope {
+  /** Path segment of the scope; empty for a map iterator (path continues from the map id). */
   readonly name: string;
   readonly steps: Step[];
+  /** Workflow type the nested steps run in, when it differs from the parent (Distributed Map children). */
+  readonly workflowType?: WorkflowType;
 }
 
 /** A state that supports retry and catch. */

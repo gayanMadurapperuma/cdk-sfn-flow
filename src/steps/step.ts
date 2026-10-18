@@ -2,6 +2,7 @@ import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { StepBuilder } from "./builder";
 import { ChoiceBuilder, ChoiceStepProps } from "./choice";
 import { FailBuilder, FailStepProps } from "./fail";
+import { MapBuilder, MapStepProps } from "./map";
 import { ParallelBuilder, ParallelStepProps } from "./parallel";
 import { PassBuilder, PassStepProps } from "./pass";
 import { RawBuilder, RawStepProps } from "./raw";
@@ -41,6 +42,13 @@ export class Step {
    */
   public static parallel(id: string, props: ParallelStepProps): Step {
     return new Step(id, new ParallelBuilder(props));
+  }
+
+  /**
+   * Runs steps for each item. `MapItems.fromS3` selects a Distributed Map in `MapMode.AUTO`.
+   */
+  public static map(id: string, props: MapStepProps): Step {
+    return new Step(id, new MapBuilder(props));
   }
 
   /**
