@@ -34,6 +34,27 @@ const project = new awscdk.AwsCdkConstructLibrary({
   prettier: true,
   eslint: true,
 
+  // Accept the standard Conventional Commits types in PR titles (projen defaults to feat/fix/chore).
+  githubOptions: {
+    pullRequestLintOptions: {
+      semanticTitleOptions: {
+        types: [
+          "feat",
+          "fix",
+          "docs",
+          "style",
+          "refactor",
+          "perf",
+          "test",
+          "build",
+          "ci",
+          "chore",
+          "revert",
+        ],
+      },
+    },
+  },
+
   publishToPypi: {
     distName: "cdk-sfn-flow",
     module: "cdk_sfn_flow",
@@ -139,8 +160,9 @@ project.testTask.spawn(
   }),
 );
 
-// Tag-driven release: push a tag like v0.1.0 to publish cdk-sfn-flow (npm + PyPI)
-// and cdk-sfn-flow-runtime (npm), then create a GitHub release.
+// Tag-driven release: push a tag like v0.1.0 to publish cdk-sfn-flow (npm, plus
+// PyPI when the PYPI_TOKEN secret is set) and cdk-sfn-flow-runtime (npm), then
+// create a GitHub release.
 const releaseWorkflow = project.github?.addWorkflow("release");
 releaseWorkflow?.on({ push: { tags: ["v*.*.*"] } });
 releaseWorkflow?.addJobs({
@@ -151,7 +173,8 @@ releaseWorkflow?.addJobs({
       contents: github.workflows.JobPermission.WRITE,
       idToken: github.workflows.JobPermission.WRITE,
     },
-    env: { CI: "true" },
+    // Secrets can't be referenced in step `if:`, so expose whether one is set.
+    env: { CI: "true", HAS_PYPI_TOKEN: "${{ secrets.PYPI_TOKEN != '' }}" },
     steps: [
       {
         name: "Checkout",
@@ -163,6 +186,8 @@ releaseWorkflow?.addJobs({
         uses: "actions/setup-node@v7.0.0",
         with: { "node-version": "22.x" },
       },
+      // npm trusted publishing (OIDC) needs npm >= 11.5.1; Node 22 ships npm 10.
+      { name: "Upgrade npm", run: "npm install -g npm@^11.5.1" },
       {
         name: "Setup Python",
         uses: "actions/setup-python@v7.0.0",
@@ -192,8 +217,10 @@ releaseWorkflow?.addJobs({
           NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}",
           NPM_CONFIG_PROVENANCE: "true",
         },
+        // Uses trusted publishing when configured on npmjs.com; NPM_TOKEN is only a
+        // fallback for packages that don't have a trusted publisher yet.
         run: [
-          'npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"',
+          'if [ -n "$NODE_AUTH_TOKEN" ]; then npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"; fi',
           "npm publish dist/js/cdk-sfn-flow@*.jsii.tgz --access public",
         ].join("\n"),
       },
@@ -207,6 +234,7 @@ releaseWorkflow?.addJobs({
       },
       {
         name: "Publish cdk-sfn-flow to PyPI",
+        if: "env.HAS_PYPI_TOKEN == 'true'",
         env: {
           TWINE_USERNAME: "__token__",
           TWINE_PASSWORD: "${{ secrets.PYPI_TOKEN }}",
