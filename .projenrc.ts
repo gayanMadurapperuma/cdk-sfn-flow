@@ -139,8 +139,9 @@ project.testTask.spawn(
   }),
 );
 
-// Tag-driven release: push a tag like v0.1.0 to publish cdk-sfn-flow (npm + PyPI)
-// and cdk-sfn-flow-runtime (npm), then create a GitHub release.
+// Tag-driven release: push a tag like v0.1.0 to publish cdk-sfn-flow (npm, plus
+// PyPI when the PYPI_TOKEN secret is set) and cdk-sfn-flow-runtime (npm), then
+// create a GitHub release.
 const releaseWorkflow = project.github?.addWorkflow("release");
 releaseWorkflow?.on({ push: { tags: ["v*.*.*"] } });
 releaseWorkflow?.addJobs({
@@ -151,7 +152,8 @@ releaseWorkflow?.addJobs({
       contents: github.workflows.JobPermission.WRITE,
       idToken: github.workflows.JobPermission.WRITE,
     },
-    env: { CI: "true" },
+    // Secrets can't be referenced in step `if:`, so expose whether one is set.
+    env: { CI: "true", HAS_PYPI_TOKEN: "${{ secrets.PYPI_TOKEN != '' }}" },
     steps: [
       {
         name: "Checkout",
@@ -207,6 +209,7 @@ releaseWorkflow?.addJobs({
       },
       {
         name: "Publish cdk-sfn-flow to PyPI",
+        if: "env.HAS_PYPI_TOKEN == 'true'",
         env: {
           TWINE_USERNAME: "__token__",
           TWINE_PASSWORD: "${{ secrets.PYPI_TOKEN }}",

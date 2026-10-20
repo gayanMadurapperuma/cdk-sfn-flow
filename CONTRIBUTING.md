@@ -37,7 +37,7 @@ Releases are tag-driven. Pushing a tag `vX.Y.Z` runs `.github/workflows/release.
 2. publishes `cdk-sfn-flow` to npm (with provenance) and PyPI, and `cdk-sfn-flow-runtime` to npm,
 3. creates a GitHub release with generated notes and the built artifacts.
 
-Repository secrets: `NPM_TOKEN` (npm automation token with publish rights) and `PYPI_TOKEN` (PyPI API token).
+Repository secrets: `NPM_TOKEN` (npm automation token with publish rights) and, optionally, `PYPI_TOKEN` (PyPI API token). The PyPI upload is skipped when `PYPI_TOKEN` is not set.
 
 First release:
 

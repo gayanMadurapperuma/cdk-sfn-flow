@@ -13,6 +13,7 @@ jobs:
       id-token: write
     env:
       CI: "true"
+      HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
     steps:
       - name: Checkout
         id: checkout
@@ -63,6 +64,7 @@ jobs:
         run: npm publish runtime/dist/js/cdk-sfn-flow-runtime-*.tgz --access public
       - name: Publish cdk-sfn-flow to PyPI
         id: publish_cdk-sfn-flow_to_pypi
+        if: env.HAS_PYPI_TOKEN == 'true'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
