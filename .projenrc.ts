@@ -2,7 +2,7 @@ import { awscdk, github, javascript, typescript } from "projen";
 
 const author = "Gayan Madurapperuma";
 const authorAddress = "madurapperumamags@gmail.com";
-const repositoryUrl = "https://github.com/gayanmadurapperuma/cdk-sfn-flow.git";
+const repositoryUrl = "https://github.com/gayanMadurapperuma/cdk-sfn-flow.git";
 
 const project = new awscdk.AwsCdkConstructLibrary({
   name: "cdk-sfn-flow",
