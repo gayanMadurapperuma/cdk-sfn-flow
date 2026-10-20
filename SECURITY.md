@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Please report vulnerabilities privately through
-[GitHub security advisories](https://github.com/gayanmadurapperuma/cdk-sfn-flow/security/advisories/new)
+[GitHub security advisories](https://github.com/gayanMadurapperuma/cdk-sfn-flow/security/advisories/new)
 rather than public issues.
 
 ## Dependency audit policy
