@@ -34,6 +34,27 @@ const project = new awscdk.AwsCdkConstructLibrary({
   prettier: true,
   eslint: true,
 
+  // Accept the standard Conventional Commits types in PR titles (projen defaults to feat/fix/chore).
+  githubOptions: {
+    pullRequestLintOptions: {
+      semanticTitleOptions: {
+        types: [
+          "feat",
+          "fix",
+          "docs",
+          "style",
+          "refactor",
+          "perf",
+          "test",
+          "build",
+          "ci",
+          "chore",
+          "revert",
+        ],
+      },
+    },
+  },
+
   publishToPypi: {
     distName: "cdk-sfn-flow",
     module: "cdk_sfn_flow",
@@ -165,6 +186,8 @@ releaseWorkflow?.addJobs({
         uses: "actions/setup-node@v7.0.0",
         with: { "node-version": "22.x" },
       },
+      // npm trusted publishing (OIDC) needs npm >= 11.5.1; Node 22 ships npm 10.
+      { name: "Upgrade npm", run: "npm install -g npm@^11.5.1" },
       {
         name: "Setup Python",
         uses: "actions/setup-python@v7.0.0",
@@ -194,8 +217,10 @@ releaseWorkflow?.addJobs({
           NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}",
           NPM_CONFIG_PROVENANCE: "true",
         },
+        // Uses trusted publishing when configured on npmjs.com; NPM_TOKEN is only a
+        // fallback for packages that don't have a trusted publisher yet.
         run: [
-          'npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"',
+          'if [ -n "$NODE_AUTH_TOKEN" ]; then npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"; fi',
           "npm publish dist/js/cdk-sfn-flow@*.jsii.tgz --access public",
         ].join("\n"),
       },
