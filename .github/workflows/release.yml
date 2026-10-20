@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+    environment: npm
     env:
       CI: "true"
       HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
@@ -27,7 +28,7 @@ jobs:
           node-version: 22.x
       - name: Upgrade npm
         id: upgrade_npm
-        run: npm install -g npm@^11.5.1
+        run: npm install -g npm@^11.15.0
       - name: Setup Python
         id: setup_python
         uses: actions/setup-python@v7.0.0
@@ -51,20 +52,16 @@ jobs:
           test "$(node -p "require('./package.json').version")" = "$RELEASE_VERSION"
           test "$(node -p "require('./runtime/package.json').version")" = "$RELEASE_VERSION"
           ls dist/js dist/python runtime/dist/js
-      - name: Publish cdk-sfn-flow to npm
-        id: publish_cdk-sfn-flow_to_npm
+      - name: Stage cdk-sfn-flow on npm
+        id: stage_cdk-sfn-flow_on_npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
-        run: |-
-          if [ -n "$NODE_AUTH_TOKEN" ]; then npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"; fi
-          npm publish dist/js/cdk-sfn-flow@*.jsii.tgz --access public
-      - name: Publish cdk-sfn-flow-runtime to npm
-        id: publish_cdk-sfn-flow-runtime_to_npm
+        run: npm stage publish dist/js/cdk-sfn-flow@*.jsii.tgz --access public
+      - name: Stage cdk-sfn-flow-runtime on npm
+        id: stage_cdk-sfn-flow-runtime_on_npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
-        run: npm publish runtime/dist/js/cdk-sfn-flow-runtime-*.tgz --access public
+        run: npm stage publish runtime/dist/js/cdk-sfn-flow-runtime-*.tgz --access public
       - name: Publish cdk-sfn-flow to PyPI
         id: publish_cdk-sfn-flow_to_pypi
         if: env.HAS_PYPI_TOKEN == 'true'
