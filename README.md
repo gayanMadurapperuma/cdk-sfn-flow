@@ -135,15 +135,15 @@ flowchart TD
     GetStock["stock: GetStock (DynamoDB)"]
   end
   Enrich --> Route{Route}
-  Enrich -. States.ALL .-> Failed[[Failed]]
+  Enrich -.->|States.ALL| Failed[[Failed]]
   Route -- "total > 1000" --> Approval["Approval (callback, 2 days)"]
   Route -- otherwise --> Ship["Ship (EventBridge)"]
   Approval --> CoolOff["CoolOff (wait 300 s)"]
   CoolOff --> Ship
   Ship --> End((end))
-  Validate -. States.ALL .-> Notify["FlowNotifyFailure (SNS)"]
-  Approval -. States.ALL .-> Notify
-  Ship -. States.ALL .-> Notify
+  Validate -.->|States.ALL| Notify["FlowNotifyFailure (SNS)"]
+  Approval -.->|States.ALL| Notify
+  Ship -.->|States.ALL| Notify
   Notify --> FlowFailed[[FlowFailed]]
 ```
 
