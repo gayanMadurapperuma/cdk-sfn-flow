@@ -93,8 +93,10 @@ if (releaseVersion) {
 
 // js-yaml@3 (via jest coverage tooling) pulls in argparse@1 -> sprintf-js, which has an
 // unpatched advisory. load-nyc-config only calls `load`, which js-yaml@4 still provides.
+// jest and test-exclude still ask for glob versions affected by GHSA-3g3m-2fjr-6pw4.
 const auditOverrides = {
   "@istanbuljs/load-nyc-config": { "js-yaml": "^4.1.0" },
+  glob: "^14.0.2",
 };
 project.package.addField("overrides", auditOverrides);
 
