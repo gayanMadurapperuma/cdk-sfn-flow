@@ -26,6 +26,9 @@ tsconfig.tsbuildinfo
 /runtime/
 /examples/
 /docs/
+/build-tools/
+/.audit-allowlist.json
+/ARCHITECTURE.md
 /.gitattributes
 /.projenrc.ts
 /projenrc

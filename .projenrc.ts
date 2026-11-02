@@ -74,7 +74,14 @@ project.package.file.addOverride("jest.coverageThreshold", {
 project.package.file.addOverride("jest.watchman", false);
 
 // Folders that are not part of the jsii package.
-project.npmignore?.exclude("/runtime/", "/examples/", "/docs/");
+project.npmignore?.exclude(
+  "/runtime/",
+  "/examples/",
+  "/docs/",
+  "/build-tools/",
+  "/.audit-allowlist.json",
+  "/ARCHITECTURE.md",
+);
 project.eslint?.addIgnorePattern("runtime/");
 project.eslint?.addIgnorePattern("examples/");
 
