@@ -47,7 +47,8 @@
   "overrides": {
     "@istanbuljs/load-nyc-config": {
       "js-yaml": "^4.1.0"
-    }
+    },
+    "glob": "^14.0.2"
   },
   "engines": {
     "node": ">= 20.0.0"

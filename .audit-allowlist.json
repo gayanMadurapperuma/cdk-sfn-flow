@@ -5,6 +5,18 @@
       "package": "braces",
       "reason": "No patched braces release exists (<=3.0.3, latest is 3.0.3). Dev-only via fast-glob/micromatch in projen and jsii-docgen; glob patterns come from our own build config, never from untrusted input. Remove once a fix ships.",
       "added": "2026-10-18"
+    },
+    {
+      "id": "GHSA-gcqx-w48m-w2h4",
+      "package": "deepmerge",
+      "reason": "No patched deepmerge release exists (<=4.3.1, latest is 4.3.1). Dev-only via jest-config, which only merges this repository's jest configuration, never untrusted input. Remove once a fix ships.",
+      "added": "2026-11-03"
+    },
+    {
+      "id": "GHSA-g3hv-75wg-m249",
+      "package": "minimatch",
+      "reason": "Fixed in 11.0.1, but eslint and eslint-plugin-import require an older major and aws-cdk-lib bundles its own copy, which overrides cannot reach. Patterns come only from our own config and CDK apps at synth time, never from untrusted input. Remove once those packages adopt a patched version.",
+      "added": "2026-11-03"
     }
   ]
 }
