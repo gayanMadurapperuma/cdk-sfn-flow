@@ -62,6 +62,14 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
   // Releases are tag-driven (see the "release" workflow below), not on every push to main.
   release: false,
+  // Build PRs and every push to main (the README badge tracks main).
+  buildWorkflowOptions: {
+    workflowTriggers: {
+      pullRequest: {},
+      workflowDispatch: {},
+      push: { branches: ["main"] },
+    },
+  },
 
   gitignore: ["cdk.out/", ".DS_Store"],
   npmignoreEnabled: true,
