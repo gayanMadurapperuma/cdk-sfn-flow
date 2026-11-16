@@ -15,8 +15,9 @@
     {
       "id": "GHSA-g3hv-75wg-m249",
       "package": "minimatch",
-      "reason": "Fixed in 11.0.1, but eslint and eslint-plugin-import require an older major and aws-cdk-lib bundles its own copy, which overrides cannot reach. Patterns come only from our own config and CDK apps at synth time, never from untrusted input. Remove once those packages adopt a patched version.",
-      "added": "2026-11-03"
+      "reason": "Fixed in 11.0.1, but eslint and eslint-plugin-import require an older major and aws-cdk-lib bundles its own copy, which overrides cannot reach. Patterns come only from our own config and CDK apps at synth time, never from untrusted input. The vulnerable path needs optimizationLevel >= 2; minimatch defaults to 1 and aws-cdk-lib/core/lib never sets it. Allowed in production because aws-cdk-lib (still ^10.2.6 in 2.277.0) is a production dependency of examples/order-flow. Remove once aws-cdk-lib ships minimatch >= 11.0.1 and the dev tools adopt a patched version.",
+      "added": "2026-11-03",
+      "allowProd": true
     }
   ]
 }
