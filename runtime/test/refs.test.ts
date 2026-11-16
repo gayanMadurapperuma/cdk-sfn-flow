@@ -3,6 +3,9 @@ import { mockClient } from "aws-sdk-client-mock";
 import { memoryS3 } from "./s3-mock";
 import { isFlowRef, jsonSize, offload, resolveRefs } from "../src";
 
+/** The bucket the tests offload to is the only one references may point to. */
+const trusted = { allowedBuckets: ["b"] };
+
 describe("offload and resolveRefs", () => {
   let s3: ReturnType<typeof memoryS3>;
   beforeEach(() => {
@@ -30,7 +33,7 @@ describe("offload and resolveRefs", () => {
       },
       $keep: { status: "ok" },
     });
-    await expect(resolveRefs(ref)).resolves.toEqual(value);
+    await expect(resolveRefs(ref, trusted)).resolves.toEqual(value);
   });
 
   test("auto mode offloads only above the threshold", async () => {
@@ -73,7 +76,7 @@ describe("offload and resolveRefs", () => {
       keepInline: ["length"],
     });
     expect(ref).toMatchObject({ $keep: {} });
-    await expect(resolveRefs(ref)).resolves.toEqual([1, 2]);
+    await expect(resolveRefs(ref, trusted)).resolves.toEqual([1, 2]);
   });
 
   test("resolves nested references (parallel-merged objects and map arrays)", async () => {
@@ -94,7 +97,7 @@ describe("offload and resolveRefs", () => {
       flag: true,
     };
 
-    await expect(resolveRefs(merged)).resolves.toEqual({
+    await expect(resolveRefs(merged, trusted)).resolves.toEqual({
       pricing: { total: 1200 },
       stock: { qty: 3 },
       items: [{ n: 1 }, { n: 2 }],
@@ -106,7 +109,7 @@ describe("offload and resolveRefs", () => {
   test("resolves references whose payload contains references", async () => {
     const inner = await offload({ deep: "value" }, { bucket: "b", mode: "s3" });
     const outer = await offload({ inner }, { bucket: "b", mode: "s3" });
-    await expect(resolveRefs(outer)).resolves.toEqual({
+    await expect(resolveRefs(outer, trusted)).resolves.toEqual({
       inner: { deep: "value" },
     });
   });
@@ -120,13 +123,58 @@ describe("offload and resolveRefs", () => {
     expect(s3.mock.calls()).toHaveLength(0);
   });
 
+  test("rejects references outside the allowed buckets", async () => {
+    await offload({ secret: true }, { bucket: "other", mode: "s3", key: "k" });
+    const foreign = { $flowRef: { bucket: "other", key: "k", size: 1 } };
+
+    await expect(resolveRefs(foreign, trusted)).rejects.toThrow(
+      "refusing to resolve s3://other/k: 'other' is not an allowed payload bucket",
+    );
+    // Nested references are checked too, and nothing is read.
+    await expect(
+      resolveRefs({ items: [{ deep: foreign }] }, trusted),
+    ).rejects.toThrow("refusing to resolve s3://other/k");
+    // Without any allowed bucket every reference is rejected.
+    await expect(resolveRefs(foreign)).rejects.toThrow("refusing to resolve");
+    expect(s3.mock.commandCalls(GetObjectCommand)).toHaveLength(0);
+  });
+
+  test("allows the FLOW_PAYLOAD_BUCKET by default", async () => {
+    const before = process.env.FLOW_PAYLOAD_BUCKET;
+    process.env.FLOW_PAYLOAD_BUCKET = "b";
+    try {
+      const ref = await offload({ a: 1 }, { bucket: "b", mode: "s3" });
+      await expect(resolveRefs(ref)).resolves.toEqual({ a: 1 });
+    } finally {
+      if (before === undefined) delete process.env.FLOW_PAYLOAD_BUCKET;
+      else process.env.FLOW_PAYLOAD_BUCKET = before;
+    }
+  });
+
+  test("rejects keys outside the allowed prefixes", async () => {
+    const inside = await offload(
+      { a: 1 },
+      { bucket: "b", mode: "s3", key: "flow/orders/x.json" },
+    );
+    const outside = await offload(
+      { b: 2 },
+      { bucket: "b", mode: "s3", key: "private/x.json" },
+    );
+    const options = { ...trusted, allowedKeyPrefixes: ["flow/"] };
+
+    await expect(resolveRefs(inside, options)).resolves.toEqual({ a: 1 });
+    await expect(resolveRefs(outside, options)).rejects.toThrow(
+      "refusing to resolve s3://b/private/x.json: the key is outside the allowed prefixes (flow/)",
+    );
+  });
+
   test("uses an injected client", async () => {
     const client = new S3Client({});
     await offload({ a: 1 }, { bucket: "b", mode: "s3", key: "k.json", client });
     await expect(
       resolveRefs(
         { $flowRef: { bucket: "b", key: "k.json", size: 7 } },
-        { client },
+        { client, ...trusted },
       ),
     ).resolves.toEqual({ a: 1 });
   });
@@ -136,7 +184,10 @@ test("fails clearly when the stored object has no body", async () => {
   const mock = mockClient(S3Client);
   mock.on(GetObjectCommand).resolves({});
   await expect(
-    resolveRefs({ $flowRef: { bucket: "b", key: "k", size: 1 } }),
+    resolveRefs(
+      { $flowRef: { bucket: "b", key: "k", size: 1 } },
+      { allowedBuckets: ["b"] },
+    ),
   ).rejects.toThrow("s3://b/k has no body");
   mock.restore();
 });

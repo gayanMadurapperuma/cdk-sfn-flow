@@ -1,6 +1,7 @@
 import { Duration } from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
+import type { PayloadEnvelope } from "../invoke/invoke";
 
 /**
  * How step outputs are passed between states.
@@ -81,6 +82,11 @@ export class PayloadStore {
     return this.config.retentionDays ?? 7;
   }
 
+  /** True when the bucket is generated, so `retentionDays` applies to it. */
+  public get managesRetention(): boolean {
+    return this.config.bucket === undefined;
+  }
+
   /** The bucket, if one exists (given or created) without forcing creation. */
   public get existingBucket(): s3.IBucket | undefined {
     return this.config.bucket ?? this.created;
@@ -108,7 +114,25 @@ export class PayloadStore {
   }
 }
 
-/** Environment variables read by `cdk-sfn-flow-runtime`. */
+/** The claim-check settings sent to Lambda tasks with every invocation. */
+export function payloadEnvelope(
+  store: PayloadStore,
+  keepInline: string[] | undefined,
+): PayloadEnvelope {
+  const auto = store.strategy === PayloadStrategy.AUTO;
+  return {
+    prefix: store.prefix,
+    keepInline,
+    bucket: store.bucket().bucketName,
+    mode: auto ? "auto" : "s3",
+    thresholdKb: auto ? store.thresholdKb : undefined,
+  };
+}
+
+/**
+ * Environment variables read by `cdk-sfn-flow-runtime` 0.1.x. Newer runtimes take the
+ * settings from the envelope and use these only as a fallback.
+ */
 export const PAYLOAD_ENV = {
   bucket: "FLOW_PAYLOAD_BUCKET",
   mode: "FLOW_PAYLOAD_MODE",

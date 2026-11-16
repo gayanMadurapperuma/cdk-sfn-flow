@@ -26,7 +26,9 @@ export function withTaskToken(input: string | undefined): string {
 
 /**
  * Wraps the Lambda payload in the claim-check envelope read by `withPayload`:
- * `{ "$flow": { workflow, execution, step, keepInline }, "data": <input> }`.
+ * `{ "$flow": { prefix, execution, step, keepInline, bucket, mode, thresholdKb }, "data": <input> }`.
+ * The settings travel with each invocation, so the same function behaves correctly in
+ * several workflows and stays a plain function when it is invoked from anywhere else.
  */
 export function envelopePayload(
   source: string,
@@ -37,6 +39,12 @@ export function envelopePayload(
     `"execution": $states.context.Execution.Name`,
     `"step": $states.context.State.Name`,
     `"keepInline": ${JSON.stringify(envelope.keepInline ?? [])}`,
+    // The bucket name is a deploy-time token; it is substituted into the string.
+    `"bucket": "${envelope.bucket}"`,
+    `"mode": ${JSON.stringify(envelope.mode)}`,
+    ...(envelope.thresholdKb === undefined
+      ? []
+      : [`"thresholdKb": ${envelope.thresholdKb}`]),
   ].join(", ");
   return wrap(`{ "$flow": { ${flow} }, "data": ${source} }`);
 }

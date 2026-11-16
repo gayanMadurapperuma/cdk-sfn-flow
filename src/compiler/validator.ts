@@ -5,6 +5,9 @@ import type { Step } from "../steps/step";
 import { StepType } from "../steps/step-type";
 import { END } from "../types";
 
+/** Step Functions limits state names to 80 characters. */
+const MAX_STATE_NAME_LENGTH = 80;
+
 /** A synth-time warning. */
 export interface ValidationWarning {
   /** Stable rule id, used as the annotation id. */
@@ -58,6 +61,11 @@ export function validateWorkflow(
           `${format(scope.path) || "(workflow)"}: step ids must not be empty`,
         );
         continue;
+      }
+      if (step.id.length > MAX_STATE_NAME_LENGTH) {
+        errors.push(
+          `${path}: step ids are state names and must be at most ${MAX_STATE_NAME_LENGTH} characters (got ${step.id.length})`,
+        );
       }
       if (reserved.has(step.id)) {
         errors.push(`${path}: '${step.id}' is a reserved step id`);

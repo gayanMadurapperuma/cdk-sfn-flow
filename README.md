@@ -22,11 +22,11 @@ The same order workflow written two ways, both formatted with Prettier at 100 co
 
 | | Lines | Also includes |
 |---|---|---|
-| Plain CDK (`sfn.*` / `tasks.*`) | **120** | nothing else: no validation, no payload warnings |
+| Plain CDK (`sfn.*` / `tasks.*`) | **116** | nothing else: no validation, no payload warnings |
 | `FlowWorkflow` | **64** | validation, payload warnings, scoped grants, generated global catch |
 
 <details>
-<summary>Plain CDK version (120 lines)</summary>
+<summary>Plain CDK version (116 lines)</summary>
 
 ```ts
 const retry = {
@@ -152,9 +152,11 @@ flowchart TD
 - **Flow resolution.** Steps run in array order. `next` overrides the order, and `'end'` ends the
   current list. `choice`, `succeed` and `fail` are terminal, and the last step of a list (workflow,
   parallel branch or map iterator) ends that list. Loops are allowed via `choice`.
-- **Defaults.** `defaults.retry`, `defaults.disableRetry` and `defaults.timeout` apply to every `task`,
-  `parallel`, `map` and `subflow` step. Per-step values override them.
+- **Defaults.** `defaults.retry` and `defaults.disableRetry` apply to every `task`; `defaults.timeout`
+  applies to `task` and `subflow` steps. Per-step values override them.
   - Built-in retry: `States.TaskFailed` and the three `Lambda.*` service errors; 3 attempts, 2 s interval, backoff 2, full jitter.
+  - A `parallel`, `map` or `subflow` is retried only when the step sets `retry` (or `disableRetry: false`).
+    Retrying one re-runs everything inside it, on top of the retries of its tasks.
   - `defaults.catchErrors` applies to top-level steps. A failure inside a branch or iterator surfaces on the
     enclosing `parallel`/`map`, which catches it.
   - If `alarms.topic` is set and `defaults.catchErrors` is not, every top-level step gets a catch that
@@ -195,7 +197,7 @@ Exposed: `stateMachine`, `role`, `logGroup`, `alarms`, `payloadBucket`, `workflo
 | `comment` | all | |
 | `assign` | all except `fail` | `{ name: '{% expr %}' }` JSONata variables |
 | `output` | all except `fail` | JSONata output |
-| `retry`, `disableRetry`, `catchErrors` | `task`, `parallel`, `map`, `subflow` | merged over `defaults` |
+| `retry`, `disableRetry`, `catchErrors` | `task`, `parallel`, `map`, `subflow` | merged over `defaults`; only tasks retry by default |
 
 ### Step types
 
@@ -227,7 +229,7 @@ Exposed: `stateMachine`, `role`, `logGroup`, `alarms`, `payloadBucket`, `workflo
 | `Invoke.sdk({ service, action, iamResources, paramsExpr?, iamAction? })` | request-response | exactly `service:Action` on `iamResources` |
 
 For callback tasks the task token is merged into the payload as `taskToken`. DynamoDB `paramsExpr` is
-merged with `TableName`.
+merged with `TableName`, which always is the table you passed.
 
 ## Payload strategy
 
@@ -236,8 +238,8 @@ Step Functions limits state payloads to 256 KB. `payload.strategy` decides what 
 | Strategy | Infrastructure | Runtime (`withPayload`) |
 |---|---|---|
 | `INLINE` (default) | nothing | nothing |
-| `S3` | payload bucket (SSE, public access blocked, SSL enforced, expiry after `retentionDays`); read/write on `flow/<workflow>/*` for every referenced Lambda; `FLOW_PAYLOAD_*` env vars | always offloads outputs and resolves inputs |
-| `AUTO` | same as `S3`, plus `FLOW_PAYLOAD_THRESHOLD_KB` | offloads only outputs above `thresholdKb` |
+| `S3` | payload bucket (SSE, public access blocked, SSL enforced, expiry after `retentionDays`); read/write on `flow/<workflow>/*` for every referenced Lambda; settings sent with each invocation | always offloads outputs and resolves inputs |
+| `AUTO` | same as `S3`, plus the threshold | offloads only outputs above `thresholdKb` |
 
 Wrap your handlers with the runtime:
 
@@ -255,7 +257,10 @@ An offloaded output looks like
 The construct moves `$keep` fields to the top level of the state output, so `choice` conditions and
 other states can still read them as `$states.input.<field>`. Use `keepInline` on the task for control-flow
 fields, and the validator warns when a later state reads a field that might not be inline.
-See [docs/payload-strategy.md](docs/payload-strategy.md).
+
+`withPayload` acts only on invocations from the workflow, and resolves only references into the
+workflow's payload bucket, so a wrapped handler stays a plain function everywhere else and untrusted
+input cannot point it at other objects. See [docs/payload-strategy.md](docs/payload-strategy.md).
 
 ## Validation
 

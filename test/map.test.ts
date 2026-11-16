@@ -1,6 +1,6 @@
 import { Template } from "aws-cdk-lib/assertions";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import { fn, newStack, synth } from "./util";
+import { fn, newStack, synth, warningsFor } from "./util";
 import {
   FlowWorkflow,
   Invoke,
@@ -46,7 +46,8 @@ describe("inline map", () => {
       },
       End: true,
     });
-    expect(asl.States.Each.Retry).toHaveLength(1);
+    // A map is not retried unless the step asks for it.
+    expect(asl.States.Each.Retry).toBeUndefined();
     template.resourceCountIs("AWS::S3::Bucket", 0);
   });
 
@@ -66,6 +67,23 @@ describe("inline map", () => {
     ).toThrow(
       /'batch' requires a Distributed Map[\s\S]*'results' requires a Distributed Map/,
     );
+  });
+
+  test("warns when concurrency exceeds what an Inline Map supports", () => {
+    const build = (concurrency: number) =>
+      synth(() => ({
+        steps: [
+          Step.map("Each", {
+            items: MapItems.fromExpr("{% $states.input.items %}"),
+            concurrency,
+            steps: [Step.pass("P")],
+          }),
+        ],
+      }));
+    expect(warningsFor(build(41).stack, "InlineMapConcurrency")).toEqual([
+      expect.stringContaining("Each: an Inline Map runs at most 40"),
+    ]);
+    expect(warningsFor(build(40).stack, "InlineMapConcurrency")).toEqual([]);
   });
 });
 
@@ -280,6 +298,19 @@ describe("distributed map", () => {
           ],
         }),
         "'csvHeaders' requires S3ItemFormat.CSV",
+      ],
+      [
+        () => ({
+          steps: [
+            Step.map("M", {
+              mode: MapMode.DISTRIBUTED,
+              items: MapItems.fromExpr("{% [] %}"),
+              toleratedFailureCount: -1,
+              steps: [Step.pass("P")],
+            }),
+          ],
+        }),
+        "'toleratedFailureCount' must be a non-negative integer",
       ],
       [
         () => ({

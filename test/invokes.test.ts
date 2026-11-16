@@ -52,7 +52,8 @@ describe("DynamoDB invokes", () => {
         `arn:\${AWS::Partition}:states:::dynamodb:${api}`,
       );
       expect(asl.States.T.Arguments).toMatch(
-        /^\{% \$merge\(\[\{ "TableName": "\$\{Table\w+\}" \}, \(\{ "Key": \{ "sku": \{ "S": \$states\.input\.sku \} \} \}\)\]\) %\}$/,
+        // TableName is merged last, so the expression cannot override it.
+        /^\{% \$merge\(\[\(\{ "Key": \{ "sku": \{ "S": \$states\.input\.sku \} \} \}\), \{ "TableName": "\$\{Table\w+\}" \}\]\) %\}$/,
       );
       expect(asl.States.T.Retry).toBeDefined();
       expect(statements(template)).toContainEqual({

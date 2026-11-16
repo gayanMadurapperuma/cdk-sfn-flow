@@ -32,6 +32,19 @@ describe("validation errors", () => {
     );
   });
 
+  test("step ids longer than a state name", () => {
+    expectError(
+      () => ({ steps: [Step.pass("x".repeat(81))] }),
+      "step ids are state names and must be at most 80 characters (got 81)",
+    );
+    expect(
+      () =>
+        new FlowWorkflow(newStack(), "Flow", {
+          steps: [Step.pass("x".repeat(80))],
+        }),
+    ).not.toThrow();
+  });
+
   test("empty step id", () => {
     expectError(
       () => ({ steps: [Step.pass("")] }),

@@ -35,15 +35,21 @@ export interface InvokeStateOptions {
   readonly heartbeatTimeout?: sfn.Timeout;
 }
 
-/** Options for creating the task state of an invoke. */
 /** Claim-check settings passed to Lambda tasks in S3/AUTO payload mode. */
 export interface PayloadEnvelope {
   /** Key prefix of the workflow (`flow/<workflow-name>`). */
   readonly prefix: string;
   /** Output fields kept inline. */
   readonly keepInline?: string[];
+  /** Name of the payload bucket. */
+  readonly bucket: string;
+  /** `s3` (always offload) or `auto` (offload above `thresholdKb`). */
+  readonly mode: string;
+  /** Offload threshold in KB, for `auto`. */
+  readonly thresholdKb?: number;
 }
 
+/** Options for creating the task state of an invoke. */
 export interface InvokeBindOptions {
   readonly pattern: TaskPattern;
   /** User JSONata input (`Step.task` `input`), if any. */

@@ -83,7 +83,14 @@ export class FlowResolver {
       }
 
       if (builder.resilience && state.catchable) {
-        const retry = resolveRetry(this.options.defaults, builder.resilience);
+        // Containers (parallel, map, subflow) retry only when the step asks for it.
+        const retries =
+          builder.retryByDefault === true ||
+          builder.resilience.retry !== undefined ||
+          builder.resilience.disableRetry === false;
+        const retry = retries
+          ? resolveRetry(this.options.defaults, builder.resilience)
+          : undefined;
         if (retry) {
           state.catchable.addRetry(retry);
         }

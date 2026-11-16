@@ -58,7 +58,9 @@ export class DynamoTarget implements InvokeTarget {
       ...options.state,
       resource,
       arguments: wrap(
-        `$merge([{ "TableName": "${this.table.tableName}" }, (${unwrap(this.paramsExpr)})])`,
+        // TableName comes last so that the expression cannot redirect the call to a
+        // table the role was not granted.
+        `$merge([(${unwrap(this.paramsExpr)}), { "TableName": "${this.table.tableName}" }])`,
       ),
       policies: [
         new iam.PolicyStatement({

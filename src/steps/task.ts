@@ -12,6 +12,7 @@ import {
 } from "./builder";
 import { StepType } from "./step-type";
 import type { FlowWorkflowContext } from "../compiler/context";
+import { payloadEnvelope } from "../compiler/payload";
 import type { Invoke } from "../invoke/invoke";
 import { TaskPattern } from "../invoke/task-pattern";
 import { ResilientStepProps, WorkflowType } from "../types";
@@ -65,6 +66,7 @@ export class TaskBuilder implements StepBuilder {
   public readonly terminal = false;
   public readonly next?: string;
   public readonly resilience: Resilience;
+  public readonly retryByDefault = true;
 
   constructor(public readonly props: TaskStepProps) {
     this.next = props.next;
@@ -112,6 +114,17 @@ export class TaskBuilder implements StepBuilder {
         `'keepInline' applies to Invoke.lambda tasks only (got ${target.name})`,
       );
     }
+    if (
+      this.props.output !== undefined &&
+      v.context.payload.offloads &&
+      target.lambdaFunction !== undefined &&
+      this.pattern === TaskPattern.REQUEST_RESPONSE
+    ) {
+      v.warn(
+        "OutputOverridesOffload",
+        "'output' replaces the generated output that hoists 'keepInline' fields next to the S3 reference; $states.result may be a reference ({ $flowRef, $keep }), so handle that in the expression or drop 'output'",
+      );
+    }
     if (this.props.input !== undefined && !target.acceptsInput) {
       v.error(
         `${target.name} does not take 'input'; use the invoke's own expression instead`,
@@ -139,7 +152,7 @@ export class TaskBuilder implements StepBuilder {
       input: this.props.input,
       envelope:
         ctx.payload.offloads && this.props.invoke._target.lambdaFunction
-          ? { prefix: ctx.payload.prefix, keepInline: this.props.keepInline }
+          ? payloadEnvelope(ctx.payload, this.props.keepInline)
           : undefined,
       state: {
         comment: this.props.comment,

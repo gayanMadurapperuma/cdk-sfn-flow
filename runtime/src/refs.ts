@@ -41,6 +41,33 @@ export interface OffloadOptions {
 
 export interface ResolveOptions {
   readonly client?: S3Client;
+  /**
+   * Buckets references may point to. A reference to any other bucket is rejected, so
+   * that untrusted input cannot make the function read arbitrary objects.
+   * Defaults to the `FLOW_PAYLOAD_BUCKET` environment variable.
+   */
+  readonly allowedBuckets?: readonly string[];
+  /** When set, reference keys must start with one of these prefixes. */
+  readonly allowedKeyPrefixes?: readonly string[];
+}
+
+/** Throws unless `ref` points to an allowed bucket (and key prefix). */
+function assertTrusted(
+  ref: FlowRef,
+  buckets: readonly string[],
+  prefixes: readonly string[] | undefined,
+): void {
+  const { bucket, key } = ref.$flowRef;
+  if (!buckets.includes(bucket)) {
+    throw new Error(
+      `cdk-sfn-flow-runtime: refusing to resolve s3://${bucket}/${key}: '${bucket}' is not an allowed payload bucket (see 'allowedBuckets')`,
+    );
+  }
+  if (prefixes && !prefixes.some((prefix) => key.startsWith(prefix))) {
+    throw new Error(
+      `cdk-sfn-flow-runtime: refusing to resolve s3://${bucket}/${key}: the key is outside the allowed prefixes (${prefixes.join(", ")})`,
+    );
+  }
 }
 
 let defaultClient: S3Client | undefined;
@@ -95,14 +122,18 @@ async function load(ref: FlowRef, client: S3Client): Promise<unknown> {
 /**
  * Recursively replaces every `$flowRef` object in `value` (including inside
  * Parallel-merged objects and Map result arrays) with the payload it points to.
+ * References outside `allowedBuckets` / `allowedKeyPrefixes` are rejected.
  */
 export async function resolveRefs<T = unknown>(
   value: unknown,
   options: ResolveOptions = {},
 ): Promise<T> {
   const client = s3(options.client);
+  const envBucket = process.env.FLOW_PAYLOAD_BUCKET;
+  const buckets = options.allowedBuckets ?? (envBucket ? [envBucket] : []);
   const visit = async (node: unknown): Promise<unknown> => {
     if (isFlowRef(node)) {
+      assertTrusted(node, buckets, options.allowedKeyPrefixes);
       return visit(await load(node, client));
     }
     if (Array.isArray(node)) {

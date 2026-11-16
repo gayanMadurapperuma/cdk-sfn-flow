@@ -235,25 +235,33 @@ exports[`README example synthesises 1`] = `
           "Fn::Join": [
             "",
             [
-              "{"StartAt":"Validate","States":{"Validate":{"Next":"Enrich","Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"FlowNotifyFailure"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [\\"sku\\"] }, \\"data\\": $states.input } %}","Output":"{% $exists($states.result.\`$flowRef\`) ? $merge([$states.result.\`$keep\`, { \\"$flowRef\\": $states.result.\`$flowRef\` }]) : $states.result %}","Resource":"",
+              "{"StartAt":"Validate","States":{"Validate":{"Next":"Enrich","Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"FlowNotifyFailure"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [\\"sku\\"], \\"bucket\\": \\"",
+              {
+                "Ref": "OrderFlowPayloadBucketD37B8B2B",
+              },
+              "\\", \\"mode\\": \\"auto\\", \\"thresholdKb\\": 200 }, \\"data\\": $states.input } %}","Output":"{% $exists($states.result.\`$flowRef\`) ? $merge([$states.result.\`$keep\`, { \\"$flowRef\\": $states.result.\`$flowRef\` }]) : $states.result %}","Resource":"",
               {
                 "Fn::GetAtt": [
                   "Validate809E4227",
                   "Arn",
                 ],
               },
-              ""},"Enrich":{"Type":"Parallel","Next":"Route","Output":"{% { \\"pricing\\": $states.result[0], \\"stock\\": $states.result[1] } %}","Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"Failed"}],"Branches":[{"StartAt":"GetPrice","States":{"GetPrice":{"QueryLanguage":"JSONata","End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [\\"total\\"] }, \\"data\\": $states.input } %}","Output":"{% $exists($states.result.\`$flowRef\`) ? $merge([$states.result.\`$keep\`, { \\"$flowRef\\": $states.result.\`$flowRef\` }]) : $states.result %}","Resource":"",
+              ""},"Enrich":{"Type":"Parallel","Next":"Route","Output":"{% { \\"pricing\\": $states.result[0], \\"stock\\": $states.result[1] } %}","Catch":[{"ErrorEquals":["States.ALL"],"Next":"Failed"}],"Branches":[{"StartAt":"GetPrice","States":{"GetPrice":{"QueryLanguage":"JSONata","End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [\\"total\\"], \\"bucket\\": \\"",
+              {
+                "Ref": "OrderFlowPayloadBucketD37B8B2B",
+              },
+              "\\", \\"mode\\": \\"auto\\", \\"thresholdKb\\": 200 }, \\"data\\": $states.input } %}","Output":"{% $exists($states.result.\`$flowRef\`) ? $merge([$states.result.\`$keep\`, { \\"$flowRef\\": $states.result.\`$flowRef\` }]) : $states.result %}","Resource":"",
               {
                 "Fn::GetAtt": [
                   "Price89D349F1",
                   "Arn",
                 ],
               },
-              ""}}},{"StartAt":"GetStock","States":{"GetStock":{"QueryLanguage":"JSONata","End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% $merge([{ \\"TableName\\": \\"",
+              ""}}},{"StartAt":"GetStock","States":{"GetStock":{"QueryLanguage":"JSONata","End":true,"Retry":[{"ErrorEquals":["States.TaskFailed","Lambda.ServiceException","Lambda.TooManyRequestsException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":3,"BackoffRate":2,"JitterStrategy":"FULL"}],"Type":"Task","TimeoutSeconds":120,"Arguments":"{% $merge([({ \\"Key\\": { \\"sku\\": { \\"S\\": $states.input.sku } } }), { \\"TableName\\": \\"",
               {
                 "Ref": "Stock38709CBC",
               },
-              "\\" }, ({ \\"Key\\": { \\"sku\\": { \\"S\\": $states.input.sku } } })]) %}","Resource":"arn:",
+              "\\" }]) %}","Resource":"arn:",
               {
                 "Ref": "AWS::Partition",
               },
@@ -268,7 +276,11 @@ exports[`README example synthesises 1`] = `
                   "Arn",
                 ],
               },
-              "","Payload":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [] }, \\"data\\": $merge([$states.input, { \\"taskToken\\": $states.context.Task.Token }]) } %}"},"Resource":"arn:",
+              "","Payload":"{% { \\"$flow\\": { \\"prefix\\": \\"flow/TestStackOrderFlow6D17FD65\\", \\"execution\\": $states.context.Execution.Name, \\"step\\": $states.context.State.Name, \\"keepInline\\": [], \\"bucket\\": \\"",
+              {
+                "Ref": "OrderFlowPayloadBucketD37B8B2B",
+              },
+              "\\", \\"mode\\": \\"auto\\", \\"thresholdKb\\": 200 }, \\"data\\": $merge([$states.input, { \\"taskToken\\": $states.context.Task.Token }]) } %}"},"Resource":"arn:",
               {
                 "Ref": "AWS::Partition",
               },
