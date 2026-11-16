@@ -1,6 +1,6 @@
 # cdk-sfn-flow
 
-[![build](https://github.com/gayanmadurapperuma/cdk-sfn-flow/actions/workflows/build.yml/badge.svg)](https://github.com/gayanmadurapperuma/cdk-sfn-flow/actions/workflows/build.yml)
+[![build](https://github.com/gayanMadurapperuma/cdk-sfn-flow/actions/workflows/build.yml/badge.svg)](https://github.com/gayanMadurapperuma/cdk-sfn-flow/actions/workflows/build.yml)
 [![npm](https://img.shields.io/npm/v/cdk-sfn-flow)](https://www.npmjs.com/package/cdk-sfn-flow)
 [![PyPI](https://img.shields.io/pypi/v/cdk-sfn-flow)](https://pypi.org/project/cdk-sfn-flow/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -135,15 +135,15 @@ flowchart TD
     GetStock["stock: GetStock (DynamoDB)"]
   end
   Enrich --> Route{Route}
-  Enrich -. States.ALL .-> Failed[[Failed]]
+  Enrich -.->|States.ALL| Failed[[Failed]]
   Route -- "total > 1000" --> Approval["Approval (callback, 2 days)"]
   Route -- otherwise --> Ship["Ship (EventBridge)"]
   Approval --> CoolOff["CoolOff (wait 300 s)"]
   CoolOff --> Ship
   Ship --> End((end))
-  Validate -. States.ALL .-> Notify["FlowNotifyFailure (SNS)"]
-  Approval -. States.ALL .-> Notify
-  Ship -. States.ALL .-> Notify
+  Validate -.->|States.ALL| Notify["FlowNotifyFailure (SNS)"]
+  Approval -.->|States.ALL| Notify
+  Ship -.->|States.ALL| Notify
   Notify --> FlowFailed[[FlowFailed]]
 ```
 

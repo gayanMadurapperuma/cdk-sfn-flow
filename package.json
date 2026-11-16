@@ -3,7 +3,7 @@
   "description": "Config-driven AWS Step Functions workflows for CDK. Describe behaviour, not states.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gayanmadurapperuma/cdk-sfn-flow.git"
+    "url": "https://github.com/gayanMadurapperuma/cdk-sfn-flow.git"
   },
   "scripts": {
     "audit": "projen audit",

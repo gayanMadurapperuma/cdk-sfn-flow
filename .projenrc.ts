@@ -2,7 +2,7 @@ import { awscdk, github, javascript, typescript } from "projen";
 
 const author = "Gayan Madurapperuma";
 const authorAddress = "madurapperumamags@gmail.com";
-const repositoryUrl = "https://github.com/gayanmadurapperuma/cdk-sfn-flow.git";
+const repositoryUrl = "https://github.com/gayanMadurapperuma/cdk-sfn-flow.git";
 
 const project = new awscdk.AwsCdkConstructLibrary({
   name: "cdk-sfn-flow",
@@ -33,6 +33,27 @@ const project = new awscdk.AwsCdkConstructLibrary({
   projenrcTs: true,
   prettier: true,
   eslint: true,
+
+  // Accept the standard Conventional Commits types in PR titles (projen defaults to feat/fix/chore).
+  githubOptions: {
+    pullRequestLintOptions: {
+      semanticTitleOptions: {
+        types: [
+          "feat",
+          "fix",
+          "docs",
+          "style",
+          "refactor",
+          "perf",
+          "test",
+          "build",
+          "ci",
+          "chore",
+          "revert",
+        ],
+      },
+    },
+  },
 
   publishToPypi: {
     distName: "cdk-sfn-flow",
@@ -147,19 +168,24 @@ project.testTask.spawn(
   }),
 );
 
-// Tag-driven release: push a tag like v0.1.0 to publish cdk-sfn-flow (npm + PyPI)
-// and cdk-sfn-flow-runtime (npm), then create a GitHub release.
+// Tag-driven release: push a tag like v0.1.0 to stage cdk-sfn-flow and
+// cdk-sfn-flow-runtime on npm (a maintainer approves them with 2FA on npmjs.com),
+// publish cdk-sfn-flow to PyPI when the PYPI_TOKEN secret is set, then create a
+// GitHub release.
 const releaseWorkflow = project.github?.addWorkflow("release");
 releaseWorkflow?.on({ push: { tags: ["v*.*.*"] } });
 releaseWorkflow?.addJobs({
   release: {
     runsOn: ["ubuntu-latest"],
-    // id-token: npm provenance attestations.
+    // The npm trusted publishers are bound to this environment, which only accepts v* tags.
+    environment: "npm",
+    // id-token: npm trusted publishing (OIDC) and provenance attestations.
     permissions: {
       contents: github.workflows.JobPermission.WRITE,
       idToken: github.workflows.JobPermission.WRITE,
     },
-    env: { CI: "true" },
+    // Secrets can't be referenced in step `if:`, so expose whether one is set.
+    env: { CI: "true", HAS_PYPI_TOKEN: "${{ secrets.PYPI_TOKEN != '' }}" },
     steps: [
       {
         name: "Checkout",
@@ -171,6 +197,8 @@ releaseWorkflow?.addJobs({
         uses: "actions/setup-node@v7.0.0",
         with: { "node-version": "22.x" },
       },
+      // `npm stage publish` needs npm >= 11.15.0; Node 22 ships npm 10.
+      { name: "Upgrade npm", run: "npm install -g npm@^11.15.0" },
       {
         name: "Setup Python",
         uses: "actions/setup-python@v7.0.0",
@@ -194,27 +222,21 @@ releaseWorkflow?.addJobs({
           "ls dist/js dist/python runtime/dist/js",
         ].join("\n"),
       },
+      // Trusted publishing (OIDC), no token. The trusted publishers only allow
+      // `npm stage publish`, so versions go live once approved on npmjs.com.
       {
-        name: "Publish cdk-sfn-flow to npm",
-        env: {
-          NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}",
-          NPM_CONFIG_PROVENANCE: "true",
-        },
-        run: [
-          'npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"',
-          "npm publish dist/js/cdk-sfn-flow@*.jsii.tgz --access public",
-        ].join("\n"),
+        name: "Stage cdk-sfn-flow on npm",
+        env: { NPM_CONFIG_PROVENANCE: "true" },
+        run: "npm stage publish dist/js/cdk-sfn-flow@*.jsii.tgz --access public",
       },
       {
-        name: "Publish cdk-sfn-flow-runtime to npm",
-        env: {
-          NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}",
-          NPM_CONFIG_PROVENANCE: "true",
-        },
-        run: "npm publish runtime/dist/js/cdk-sfn-flow-runtime-*.tgz --access public",
+        name: "Stage cdk-sfn-flow-runtime on npm",
+        env: { NPM_CONFIG_PROVENANCE: "true" },
+        run: "npm stage publish runtime/dist/js/cdk-sfn-flow-runtime-*.tgz --access public",
       },
       {
         name: "Publish cdk-sfn-flow to PyPI",
+        if: "env.HAS_PYPI_TOKEN == 'true'",
         env: {
           TWINE_USERNAME: "__token__",
           TWINE_PASSWORD: "${{ secrets.PYPI_TOKEN }}",

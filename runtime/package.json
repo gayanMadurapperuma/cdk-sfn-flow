@@ -3,7 +3,7 @@
   "description": "Runtime helpers (S3 claim-check payloads) for cdk-sfn-flow Lambda handlers.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gayanmadurapperuma/cdk-sfn-flow.git"
+    "url": "https://github.com/gayanMadurapperuma/cdk-sfn-flow.git"
   },
   "scripts": {
     "build": "projen build",

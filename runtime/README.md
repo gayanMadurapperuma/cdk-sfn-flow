@@ -1,6 +1,6 @@
 # cdk-sfn-flow-runtime
 
-Lambda-side helpers for [`cdk-sfn-flow`](https://github.com/gayanmadurapperuma/cdk-sfn-flow) workflows
+Lambda-side helpers for [`cdk-sfn-flow`](https://github.com/gayanMadurapperuma/cdk-sfn-flow) workflows
 that use `PayloadStrategy.S3` or `PayloadStrategy.AUTO` (S3 claim check for payloads over the 256 KB
 Step Functions limit).
 
@@ -29,5 +29,5 @@ Also exported: `flowPayloadMiddleware()` (Middy), `resolveRefs()` and `offload()
 
 `@aws-sdk/client-s3` v3 is a peer dependency; the Lambda Node.js runtime includes it.
 
-See [docs/payload-strategy.md](https://github.com/gayanmadurapperuma/cdk-sfn-flow/blob/main/docs/payload-strategy.md)
+See [docs/payload-strategy.md](https://github.com/gayanMadurapperuma/cdk-sfn-flow/blob/main/docs/payload-strategy.md)
 for the wire format.
