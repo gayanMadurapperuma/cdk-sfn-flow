@@ -40,8 +40,15 @@ function advisories(report) {
 
 const failures = [];
 
+// Production advisories fail unless their allow-list entry sets `allowProd`.
 const prod = advisories(audit(['--omit=dev']));
-for (const a of prod) failures.push(`[prod] ${a.severity} ${a.name}: ${a.title} (${a.id})`);
+for (const a of prod) {
+  if (allowed.get(a.id)?.allowProd) {
+    console.log(`audit: allow-listed IN PRODUCTION ${a.id} (${a.name}): ${allowed.get(a.id).reason}`);
+  } else {
+    failures.push(`[prod] ${a.severity} ${a.name}: ${a.title} (${a.id})`);
+  }
+}
 
 const all = advisories(audit([]));
 for (const a of all) {
@@ -59,4 +66,4 @@ if (failures.length > 0) {
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
-console.log(`audit: ${path.relative(process.cwd(), cwd) || '.'} is clean (${all.length} allow-listed dev advisories)`);
+console.log(`audit: ${path.relative(process.cwd(), cwd) || '.'} is clean (${all.length} allow-listed advisories)`);
