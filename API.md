@@ -576,7 +576,7 @@ JSONata expression for the step output.
 
 ### DefaultsConfig <a name="DefaultsConfig" id="cdk-sfn-flow.DefaultsConfig"></a>
 
-Defaults applied to every `task`, `parallel`, `map` and `subflow` step.
+Defaults for `task`, `parallel`, `map` and `subflow` steps.
 
 #### Initializer <a name="Initializer" id="cdk-sfn-flow.DefaultsConfig.Initializer"></a>
 
@@ -592,7 +592,7 @@ const defaultsConfig: DefaultsConfig = { ... }
 | --- | --- | --- |
 | <code><a href="#cdk-sfn-flow.DefaultsConfig.property.catchErrors">catchErrors</a></code> | <code><a href="#cdk-sfn-flow.CatchConfig">CatchConfig</a>[]</code> | Default error routing for top-level steps without their own `catchErrors`. |
 | <code><a href="#cdk-sfn-flow.DefaultsConfig.property.disableRetry">disableRetry</a></code> | <code>boolean</code> | Turns off retries for all steps unless a step sets `disableRetry: false`. |
-| <code><a href="#cdk-sfn-flow.DefaultsConfig.property.retry">retry</a></code> | <code><a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a></code> | Default retry. |
+| <code><a href="#cdk-sfn-flow.DefaultsConfig.property.retry">retry</a></code> | <code><a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a></code> | Default retry. Per-step `retry` fields override it. |
 | <code><a href="#cdk-sfn-flow.DefaultsConfig.property.timeout">timeout</a></code> | <code>aws-cdk-lib.Duration</code> | Default timeout for `task` and `subflow` steps. |
 
 ---
@@ -635,9 +635,11 @@ public readonly retry: RetryConfig;
 - *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
 - *Default:* the built-in retry (see `RetryConfig`)
 
-Default retry.
+Default retry. Per-step `retry` fields override it.
 
-Per-step `retry` fields override it.
+Every `task` is retried by default. A `parallel`, `map` or `subflow` is retried
+only when the step sets `retry` (or `disableRetry: false`), because retrying it
+re-runs everything inside it in addition to the retries of the inner tasks.
 
 ---
 
@@ -1539,6 +1541,9 @@ public readonly disableRetry: boolean;
 
 Turns off retries for this step.
 
+`false` turns the default retry on for a
+`parallel`, `map` or `subflow` step.
+
 ---
 
 ##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.MapStepProps.property.retry"></a>
@@ -1548,7 +1553,7 @@ public readonly retry: RetryConfig;
 ```
 
 - *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
-- *Default:* defaults.retry
+- *Default:* tasks: defaults.retry; parallel, map and subflow: no retry
 
 Retry configuration, merged over `defaults.retry`.
 
@@ -1731,7 +1736,7 @@ The steps of the branch.
 
 ### ParallelStepProps <a name="ParallelStepProps" id="cdk-sfn-flow.ParallelStepProps"></a>
 
-Properties for `Step.parallel`.
+Properties for `Step.parallel`. The step output is `{ <branch name>: result }`; `output`, when set, is merged over it and must evaluate to an object.
 
 #### Initializer <a name="Initializer" id="cdk-sfn-flow.ParallelStepProps.Initializer"></a>
 
@@ -1834,6 +1839,9 @@ public readonly disableRetry: boolean;
 
 Turns off retries for this step.
 
+`false` turns the default retry on for a
+`parallel`, `map` or `subflow` step.
+
 ---
 
 ##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.ParallelStepProps.property.retry"></a>
@@ -1843,7 +1851,7 @@ public readonly retry: RetryConfig;
 ```
 
 - *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
-- *Default:* defaults.retry
+- *Default:* tasks: defaults.retry; parallel, map and subflow: no retry
 
 Retry configuration, merged over `defaults.retry`.
 
@@ -2150,6 +2158,9 @@ public readonly disableRetry: boolean;
 
 Turns off retries for this step.
 
+`false` turns the default retry on for a
+`parallel`, `map` or `subflow` step.
+
 ---
 
 ##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.ResilientStepProps.property.retry"></a>
@@ -2159,7 +2170,7 @@ public readonly retry: RetryConfig;
 ```
 
 - *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
-- *Default:* defaults.retry
+- *Default:* tasks: defaults.retry; parallel, map and subflow: no retry
 
 Retry configuration, merged over `defaults.retry`.
 
@@ -2649,6 +2660,9 @@ public readonly disableRetry: boolean;
 
 Turns off retries for this step.
 
+`false` turns the default retry on for a
+`parallel`, `map` or `subflow` step.
+
 ---
 
 ##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.SubflowStepProps.property.retry"></a>
@@ -2658,7 +2672,7 @@ public readonly retry: RetryConfig;
 ```
 
 - *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
-- *Default:* defaults.retry
+- *Default:* tasks: defaults.retry; parallel, map and subflow: no retry
 
 Retry configuration, merged over `defaults.retry`.
 
@@ -2889,6 +2903,9 @@ public readonly disableRetry: boolean;
 
 Turns off retries for this step.
 
+`false` turns the default retry on for a
+`parallel`, `map` or `subflow` step.
+
 ---
 
 ##### `retry`<sup>Optional</sup> <a name="retry" id="cdk-sfn-flow.TaskStepProps.property.retry"></a>
@@ -2898,7 +2915,7 @@ public readonly retry: RetryConfig;
 ```
 
 - *Type:* <a href="#cdk-sfn-flow.RetryConfig">RetryConfig</a>
-- *Default:* defaults.retry
+- *Default:* tasks: defaults.retry; parallel, map and subflow: no retry
 
 Retry configuration, merged over `defaults.retry`.
 

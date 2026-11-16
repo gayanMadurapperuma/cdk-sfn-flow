@@ -96,11 +96,15 @@ export interface CatchConfig {
 }
 
 /**
- * Defaults applied to every `task`, `parallel`, `map` and `subflow` step.
+ * Defaults for `task`, `parallel`, `map` and `subflow` steps.
  */
 export interface DefaultsConfig {
   /**
    * Default retry. Per-step `retry` fields override it.
+   *
+   * Every `task` is retried by default. A `parallel`, `map` or `subflow` is retried
+   * only when the step sets `retry` (or `disableRetry: false`), because retrying it
+   * re-runs everything inside it in addition to the retries of the inner tasks.
    *
    * @default - the built-in retry (see `RetryConfig`)
    */
@@ -170,12 +174,13 @@ export interface ResilientStepProps extends StepBaseProps {
   /**
    * Retry configuration, merged over `defaults.retry`.
    *
-   * @default - defaults.retry
+   * @default - tasks: defaults.retry; parallel, map and subflow: no retry
    */
   readonly retry?: RetryConfig;
 
   /**
-   * Turns off retries for this step.
+   * Turns off retries for this step. `false` turns the default retry on for a
+   * `parallel`, `map` or `subflow` step.
    *
    * @default - defaults.disableRetry
    */

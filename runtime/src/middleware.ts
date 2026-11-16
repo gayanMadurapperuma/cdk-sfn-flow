@@ -1,7 +1,8 @@
 import {
+  FlowContext,
+  flowSettings,
   isFlowEnvelope,
   offloadOutput,
-  payloadSettings,
   resolveInput,
   WithPayloadOptions,
 } from "./with-payload";
@@ -23,14 +24,14 @@ const FLOW_KEY = "cdk-sfn-flow:context";
 
 /**
  * Middy middleware equivalent to `withPayload`: resolves references in `before`
- * and offloads the response in `after`.
+ * and offloads the response in `after`, for invocations that arrive in an envelope.
  */
 export function flowPayloadMiddleware(
   options: WithPayloadOptions = {},
 ): MiddyMiddleware {
   return {
     before: async (request) => {
-      if (!payloadSettings() && !isFlowEnvelope(request.event)) {
+      if (!isFlowEnvelope(request.event)) {
         return;
       }
       const { input, flow } = await resolveInput(request.event, options);
@@ -38,11 +39,10 @@ export function flowPayloadMiddleware(
       request.internal = { ...request.internal, [FLOW_KEY]: flow };
     },
     after: async (request) => {
-      const settings = payloadSettings();
+      // Only invocations that arrived in an envelope are offloaded.
+      const flow = request.internal?.[FLOW_KEY] as FlowContext | undefined;
+      const settings = flow && flowSettings(flow);
       if (!settings) return;
-      const flow = request.internal?.[FLOW_KEY] as Parameters<
-        typeof offloadOutput
-      >[2];
       request.response = await offloadOutput(
         request.response,
         settings,

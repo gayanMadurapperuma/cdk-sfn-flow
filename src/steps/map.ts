@@ -17,6 +17,9 @@ import { StepType } from "./step-type";
 import type { FlowWorkflowContext } from "../compiler/context";
 import { ResilientStepProps, WorkflowType } from "../types";
 
+/** Concurrent iterations an Inline Map supports. */
+const MAX_INLINE_CONCURRENCY = 40;
+
 /**
  * How a map runs its iterations.
  */
@@ -327,6 +330,25 @@ export class MapBuilder implements StepBuilder {
     ) {
       v.error(
         `'toleratedFailurePercentage' must be between 0 and 100 (got ${p.toleratedFailurePercentage})`,
+      );
+    }
+    if (
+      p.toleratedFailureCount !== undefined &&
+      (!Number.isInteger(p.toleratedFailureCount) ||
+        p.toleratedFailureCount < 0)
+    ) {
+      v.error(
+        `'toleratedFailureCount' must be a non-negative integer (got ${p.toleratedFailureCount})`,
+      );
+    }
+    if (
+      !this.distributed &&
+      p.concurrency !== undefined &&
+      p.concurrency > MAX_INLINE_CONCURRENCY
+    ) {
+      v.warn(
+        "InlineMapConcurrency",
+        `an Inline Map runs at most ${MAX_INLINE_CONCURRENCY} iterations at a time, so 'concurrency: ${p.concurrency}' has no further effect; use MapMode.DISTRIBUTED for higher concurrency`,
       );
     }
     if (!this.distributed) {

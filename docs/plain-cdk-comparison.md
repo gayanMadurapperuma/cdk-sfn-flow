@@ -1,7 +1,7 @@
 # Plain CDK comparison
 
 The README example written with plain CDK constructs (`sfn.*` / `tasks.*`), formatted with Prettier at
-100 columns: **120 non-blank lines**, against **64** for `FlowWorkflow`.
+100 columns: **116 non-blank lines**, against **64** for `FlowWorkflow`.
 
 It still lacks what `FlowWorkflow` adds on top: synth-time validation, payload warnings, the runtime
 envelope with `keepInline`, and grants scoped to the workflow prefix (this version grants the whole
@@ -77,11 +77,7 @@ getStock.addRetry(retry);
 const enrich = sfn.Parallel.jsonata(this, 'Enrich', {
   outputs: '{% { "pricing": $states.result[0], "stock": $states.result[1] } %}',
 });
-enrich
-  .branch(getPrice)
-  .branch(getStock)
-  .addRetry(retry)
-  .addCatch(failed, { errors: ['States.ALL'] });
+enrich.branch(getPrice).branch(getStock).addCatch(failed, { errors: ['States.ALL'] });
 const ship = tasks.EventBridgePutEvents.jsonata(this, 'Ship', {
   entries: [
     {

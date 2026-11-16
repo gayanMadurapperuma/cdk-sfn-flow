@@ -63,6 +63,12 @@ export interface StepBuilder {
   readonly terminal: boolean;
   /** Present for steps that take retry/catch (task, parallel, map, subflow). */
   readonly resilience?: Resilience;
+  /**
+   * Whether the step gets the default retry (`defaults.retry` over the built-in retry)
+   * without asking for it. True for tasks only: retrying a parallel, map or subflow
+   * re-runs everything inside it, on top of the retries of the inner tasks.
+   */
+  readonly retryByDefault?: boolean;
   /** Transitions other than the implicit next. */
   edges(): StepEdge[];
   children(): ChildScope[];

@@ -28,7 +28,8 @@ export interface ParallelBranch {
 }
 
 /**
- * Properties for `Step.parallel`.
+ * Properties for `Step.parallel`. The step output is `{ <branch name>: result }`;
+ * `output`, when set, is merged over it and must evaluate to an object.
  */
 export interface ParallelStepProps extends ResilientStepProps {
   /** At least two named branches, run concurrently. */

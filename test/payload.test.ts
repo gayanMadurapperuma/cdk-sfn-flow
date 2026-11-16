@@ -1,3 +1,4 @@
+import { Duration } from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
 import * as kms from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda";
@@ -93,8 +94,10 @@ describe("Lambda payloads in S3/AUTO mode", () => {
         }),
       ],
     }));
-    expect(asl.States.Score.Arguments).toBe(
-      '{% { "$flow": { "prefix": "flow/orders", "execution": $states.context.Execution.Name, "step": $states.context.State.Name, "keepInline": ["status"] }, "data": $states.input } %}',
+    expect(asl.States.Score.Arguments).toEqual(
+      expect.stringMatching(
+        /^\{% \{ "\$flow": \{ "prefix": "flow\/orders", "execution": \$states\.context\.Execution\.Name, "step": \$states\.context\.State\.Name, "keepInline": \["status"\], "bucket": "\$\{FlowPayloadBucket\w+\}", "mode": "auto", "thresholdKb": 200 \}, "data": \$states\.input \} %\}$/,
+      ),
     );
     expect(asl.States.Score.Output).toBe(
       '{% $exists($states.result.`$flowRef`) ? $merge([$states.result.`$keep`, { "$flowRef": $states.result.`$flowRef` }]) : $states.result %}',
@@ -137,8 +140,8 @@ describe("Lambda payloads in S3/AUTO mode", () => {
     ).toContainEqual(expect.stringContaining("kms:Decrypt"));
   });
 
-  test("warns for functions it cannot configure", () => {
-    const { stack } = synth((s) => ({
+  test("warns for functions it cannot grant; settings travel in the envelope", () => {
+    const { stack, asl } = synth((s) => ({
       payload: { strategy: PayloadStrategy.S3 },
       steps: [
         Step.task("Imported", {
@@ -160,7 +163,13 @@ describe("Lambda payloads in S3/AUTO mode", () => {
         }),
       ],
     }));
-    expect(warningsFor(stack, "PayloadEnvNotInjected")).toHaveLength(2);
+    // Aliases and imported functions need no env vars: the envelope carries the settings.
+    expect(warningsFor(stack, "PayloadEnvNotInjected")).toEqual([]);
+    for (const state of [asl.States.Imported, asl.States.Aliased]) {
+      expect(state.Arguments).toMatch(
+        /"bucket": "\$\{FlowPayloadBucket\w+\}", "mode": "s3" \}, "data"/,
+      );
+    }
     expect(warningsFor(stack, "PayloadGrantSkipped")).toEqual([
       expect.stringContaining("Ext has no role"),
     ]);
@@ -323,5 +332,110 @@ describe("payload warnings", () => {
     expect(warningsFor(afterPass.stack, "ChoiceReadsOffloadedInput")).toEqual(
       [],
     );
+  });
+
+  test("warns when a Lambda task sets its own output in S3/AUTO mode", () => {
+    const { stack } = synth((s) => ({
+      payload: { strategy: PayloadStrategy.S3 },
+      steps: [
+        Step.task("Custom", {
+          invoke: Invoke.lambda(fn(s, "FnA")),
+          output: "{% $states.result.total %}",
+        }),
+        Step.task("Callback", {
+          invoke: Invoke.lambda(fn(s, "FnB")),
+          pattern: TaskPattern.CALLBACK,
+          timeout: Duration.hours(1),
+          output: "{% $states.result %}",
+        }),
+      ],
+    }));
+    expect(warningsFor(stack, "OutputOverridesOffload")).toEqual([
+      expect.stringContaining("Custom: 'output' replaces the generated output"),
+    ]);
+
+    const inline = synth((s) => ({
+      steps: [
+        Step.task("Custom", {
+          invoke: Invoke.lambda(fn(s, "Fn")),
+          output: "{% $states.result.total %}",
+        }),
+      ],
+    }));
+    expect(warningsFor(inline.stack, "OutputOverridesOffload")).toEqual([]);
+  });
+});
+
+describe("payload retention", () => {
+  test("warns when a workflow, callback or wait outlives the payloads", () => {
+    const { stack } = synth((s) => ({
+      payload: { strategy: PayloadStrategy.AUTO, retentionDays: 2 },
+      timeout: Duration.days(30),
+      steps: [
+        Step.task("Approve", {
+          invoke: Invoke.lambda(fn(s, "FnA")),
+          pattern: TaskPattern.CALLBACK,
+          timeout: Duration.days(3),
+        }),
+        Step.task("Quick", {
+          invoke: Invoke.lambda(fn(s, "FnB")),
+          pattern: TaskPattern.CALLBACK,
+          timeout: Duration.hours(1),
+        }),
+        // A long timeout on a request-response task says nothing about a wait.
+        Step.task("Slow", {
+          invoke: Invoke.lambda(fn(s, "FnC")),
+          timeout: Duration.days(5),
+        }),
+        Step.wait("CoolOff", { seconds: 3 * 24 * 60 * 60 }),
+        Step.wait("Short", { seconds: 60 }),
+      ],
+    }));
+    expect(warningsFor(stack, "PayloadRetentionTooShort")).toEqual([
+      expect.stringContaining("(workflow): 'timeout' (30 days)"),
+      expect.stringContaining("Approve: the callback 'timeout' (3 days)"),
+      expect.stringContaining("CoolOff: the wait (3 days)"),
+    ]);
+  });
+
+  test("uses defaults.timeout for callbacks and stays quiet within the retention", () => {
+    const { stack } = synth((s) => ({
+      payload: { strategy: PayloadStrategy.S3 },
+      defaults: { timeout: Duration.days(8) },
+      steps: [
+        Step.task("Approve", {
+          invoke: Invoke.lambda(fn(s, "Fn")),
+          pattern: TaskPattern.CALLBACK,
+        }),
+      ],
+    }));
+    expect(warningsFor(stack, "PayloadRetentionTooShort")).toEqual([
+      expect.stringContaining("Approve: the callback 'timeout' (8 days)"),
+    ]);
+
+    const within = synth((s) => ({
+      payload: { strategy: PayloadStrategy.S3 },
+      timeout: Duration.days(7),
+      steps: [Step.task("T", { invoke: Invoke.lambda(fn(s, "Fn")) })],
+    }));
+    expect(warningsFor(within.stack, "PayloadRetentionTooShort")).toEqual([]);
+  });
+
+  test("does not apply to INLINE payloads or to a bucket the user owns", () => {
+    const inline = synth(() => ({
+      timeout: Duration.days(30),
+      steps: [Step.pass("P")],
+    }));
+    expect(warningsFor(inline.stack, "PayloadRetentionTooShort")).toEqual([]);
+
+    const own = synth((s) => ({
+      payload: {
+        strategy: PayloadStrategy.S3,
+        bucket: new s3.Bucket(s, "Mine"),
+      },
+      timeout: Duration.days(30),
+      steps: [Step.task("T", { invoke: Invoke.lambda(fn(s, "Fn")) })],
+    }));
+    expect(warningsFor(own.stack, "PayloadRetentionTooShort")).toEqual([]);
   });
 });

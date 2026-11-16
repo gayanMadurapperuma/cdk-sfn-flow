@@ -38,7 +38,8 @@ describe("Step.parallel", () => {
       "GetStock",
     ]);
     // Defaults: retry everywhere, catch on the top-level parallel only.
-    expect(enrich.Retry).toHaveLength(1);
+    // The parallel itself is not retried by default; its tasks are.
+    expect(enrich.Retry).toBeUndefined();
     expect(enrich.Catch).toEqual([
       { ErrorEquals: ["States.ALL"], Next: "Failed" },
     ]);
@@ -197,7 +198,7 @@ describe("Step.subflow", () => {
       Output: "{% $states.result.Output %}",
       TimeoutSeconds: 300,
     });
-    expect(asl.States.Run.Retry).toHaveLength(1);
+    expect(asl.States.Run.Retry).toBeUndefined();
   });
 
   test("fire-and-forget subflow of any state machine", () => {

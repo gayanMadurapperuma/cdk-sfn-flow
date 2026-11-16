@@ -9,6 +9,7 @@ import { Construct } from "constructs";
 import { PayloadConfig, PayloadStore } from "./compiler/payload";
 import {
   analyzePayload,
+  retentionWarnings,
   wirePayloadInfrastructure,
 } from "./compiler/payload-wiring";
 import { FlowResolver } from "./compiler/resolver";
@@ -168,6 +169,10 @@ export class FlowWorkflow extends Construct {
       ...result.warnings,
       ...analyzePayload(props.steps, this.payloadStore),
       ...wirePayloadInfrastructure(props.steps, this.payloadStore),
+      ...retentionWarnings(props.steps, this.payloadStore, {
+        timeout: props.timeout,
+        defaults,
+      }),
     ];
     for (const warning of warnings) {
       Annotations.of(this).addWarningV2(

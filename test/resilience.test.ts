@@ -1,7 +1,7 @@
 import { Duration } from "aws-cdk-lib";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { fn, synth } from "./util";
-import { Invoke, Step } from "../src";
+import { Invoke, MapItems, Step } from "../src";
 
 const DEFAULT_RETRY = {
   ErrorEquals: [
@@ -145,5 +145,74 @@ describe("retry and catch defaults", () => {
       { ErrorEquals: ["States.ALL"], Next: "Failed" },
     ]);
     expect(asl.States.B.Catch).toBeUndefined();
+  });
+
+  test("parallel, map and subflow steps are not retried by default", () => {
+    const { asl } = synth((stack) => ({
+      // defaults.retry tunes the task retry; it does not opt containers in.
+      defaults: { retry: { attempts: 5 } },
+      steps: [
+        Step.parallel("Both", {
+          branches: [
+            {
+              name: "a",
+              steps: [
+                Step.task("A", { invoke: Invoke.lambda(fn(stack, "FnA")) }),
+              ],
+            },
+            { name: "b", steps: [Step.pass("B")] },
+          ],
+        }),
+        Step.map("Each", {
+          items: MapItems.fromExpr("{% $states.input.items %}"),
+          steps: [Step.pass("P")],
+        }),
+        Step.subflow("Child", {
+          stateMachine: new sfn.StateMachine(stack, "Other", {
+            definitionBody: sfn.DefinitionBody.fromChainable(
+              new sfn.Pass(stack, "OtherPass"),
+            ),
+          }),
+        }),
+      ],
+    }));
+    expect(asl.States.Both.Retry).toBeUndefined();
+    expect(asl.States.Each.Retry).toBeUndefined();
+    expect(asl.States.Child.Retry).toBeUndefined();
+    // The task inside the parallel keeps its retry.
+    expect(asl.States.Both.Branches[0].States.A.Retry).toEqual([
+      { ...DEFAULT_RETRY, MaxAttempts: 5 },
+    ]);
+  });
+
+  test("a parallel or map opts in with 'retry' or 'disableRetry: false'", () => {
+    const { asl } = synth(() => ({
+      defaults: { retry: { backoffRate: 3 } },
+      steps: [
+        Step.parallel("Both", {
+          retry: { errors: ["Transient"], attempts: 2 },
+          branches: [
+            { name: "a", steps: [Step.pass("A")] },
+            { name: "b", steps: [Step.pass("B")] },
+          ],
+        }),
+        Step.map("Each", {
+          items: MapItems.fromExpr("{% $states.input.items %}"),
+          disableRetry: false,
+          steps: [Step.pass("P")],
+        }),
+      ],
+    }));
+    expect(asl.States.Both.Retry).toEqual([
+      {
+        ...DEFAULT_RETRY,
+        ErrorEquals: ["Transient"],
+        MaxAttempts: 2,
+        BackoffRate: 3,
+      },
+    ]);
+    expect(asl.States.Each.Retry).toEqual([
+      { ...DEFAULT_RETRY, BackoffRate: 3 },
+    ]);
   });
 });

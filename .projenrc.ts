@@ -71,6 +71,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
     },
   },
 
+  // Tests parse every generated JSONata expression with the reference implementation.
+  devDeps: ["jsonata@^2"],
+
   gitignore: ["cdk.out/", ".DS_Store"],
   npmignoreEnabled: true,
 });

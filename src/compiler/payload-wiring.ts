@@ -1,3 +1,4 @@
+import { Duration } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { allScopes, allSteps, dataPredecessors } from "./graph";
@@ -12,6 +13,7 @@ import type { Step } from "../steps/step";
 import { StepType } from "../steps/step-type";
 import type { TaskBuilder } from "../steps/task";
 import type { WaitBuilder } from "../steps/wait";
+import type { DefaultsConfig } from "../types";
 
 /** The Lambda function of a request-response Lambda task, whose output the runtime may offload. */
 function offloadingLambda(step: Step): lambda.IFunction | undefined {
@@ -36,8 +38,8 @@ function referencedLambdas(steps: Step[]): lambda.IFunction[] {
 }
 
 /**
- * Grants every referenced Lambda read/write on `flow/<workflow-name>/*` and injects the
- * `FLOW_PAYLOAD_*` environment. Returns warnings for functions it cannot configure.
+ * Grants every referenced Lambda read/write on `flow/<workflow-name>/*` and sets the
+ * `FLOW_PAYLOAD_*` environment. Returns warnings for functions it cannot grant.
  */
 export function wirePayloadInfrastructure(
   steps: Step[],
@@ -62,15 +64,12 @@ export function wirePayloadInfrastructure(
         message: `Lambda ${fn.node.path} has no role in this app; grant it s3:GetObject and s3:PutObject on ${store.prefix}/* of the payload bucket`,
       });
     }
+    // Runtimes from 0.2 on read the settings from the envelope. The variables are still
+    // set where possible for handlers that bundle cdk-sfn-flow-runtime 0.1.x.
     if (fn instanceof lambda.Function) {
       for (const [name, value] of Object.entries(env)) {
         fn.addEnvironment(name, value);
       }
-    } else {
-      warnings.push({
-        rule: "PayloadEnvNotInjected",
-        message: `Lambda ${fn.node.path} is not a lambda.Function, so FLOW_PAYLOAD_* variables were not set; set ${Object.keys(env).join(", ")} on it yourself`,
-      });
     }
   }
   return warnings;
@@ -217,6 +216,58 @@ export function analyzePayload(
             rule: "InlineMapOverOffloadedItems",
             message: `${path}: iterates over $states.input after ${from}, whose output may be offloaded to S3; use MapItems.fromS3 or keep the array inline with 'keepInline'`,
           });
+        }
+      }
+    }
+  }
+  return warnings;
+}
+
+/** What `retentionWarnings` needs to know about the workflow. */
+export interface RetentionOptions {
+  /** The workflow timeout. */
+  readonly timeout?: Duration;
+  readonly defaults: DefaultsConfig;
+}
+
+/**
+ * Warnings for executions that can outlive their offloaded payloads: the generated
+ * bucket deletes objects after `retentionDays`, and a reference that is resolved after
+ * that fails with NoSuchKey.
+ */
+export function retentionWarnings(
+  steps: Step[],
+  store: PayloadStore,
+  options: RetentionOptions,
+): ValidationWarning[] {
+  if (!store.offloads || !store.managesRetention) return [];
+  const limit = store.retentionDays * 24 * 60 * 60;
+  const warnings: ValidationWarning[] = [];
+  const warn = (where: string, what: string, seconds: number) => {
+    if (seconds > limit) {
+      warnings.push({
+        rule: "PayloadRetentionTooShort",
+        message: `${where}: ${what} (${Duration.seconds(seconds).toHumanString()}) is longer than payload.retentionDays (${store.retentionDays}); offloaded payloads may expire before a later step reads them, so raise 'payload.retentionDays'`,
+      });
+    }
+  };
+
+  if (options.timeout) {
+    warn("(workflow)", "'timeout'", options.timeout.toSeconds());
+  }
+  for (const scope of allScopes(steps)) {
+    for (const step of scope.steps) {
+      const path = [...scope.path, step.id].join(" > ");
+      if (step.type === StepType.TASK) {
+        const task = step._builder as TaskBuilder;
+        const timeout = task.props.timeout ?? options.defaults.timeout;
+        if (task.pattern === TaskPattern.CALLBACK && timeout) {
+          warn(path, "the callback 'timeout'", timeout.toSeconds());
+        }
+      } else if (step.type === StepType.WAIT) {
+        const seconds = (step._builder as WaitBuilder).props.seconds;
+        if (seconds !== undefined) {
+          warn(path, "the wait", seconds);
         }
       }
     }
